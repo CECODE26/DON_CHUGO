@@ -1,0 +1,18 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <meta name="don-chugo-orders-signature" content="{{ pedidos_live_signature }}">
+  <meta name="don-chugo-orders-max-id" content="{{ pedidos_live_max_id }}">
+  <meta name="don-chugo-orders-live-url" content="{% url 'admin:pedidos_pedido_estado_en_vivo' %}">
+  <meta name="don-chugo-orders-status-url" content="{% url 'admin:pedidos_pedido_cambiar_estado' %}">
+  <script src="{% static 'js/admin-orders-live.js' %}?v=20260719-2" defer></script>
+{% endblock %}
+
+{% block content_title %}
+  <div class="dc-orders-live-heading">
+    {{ block.super }}
+    <span class="dc-orders-live-badge"><i></i> Pedidos en vivo</span>
+  </div>
+{% endblock %}

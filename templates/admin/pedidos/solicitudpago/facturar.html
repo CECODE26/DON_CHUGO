@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="dc-cash-page">
+  <div class="dc-cash-page-header">
+    <div><p>CAJA DON CHUGO</p><h1>Facturar sin solicitud previa</h1><span>Selecciona la mesa completa o un invitado para revisar el consumo y cobrar.</span></div>
+    <a href="{% url 'admin:pedidos_solicitudpago_changelist' %}">Volver</a>
+  </div>
+  {% for fila in filas %}
+  <section class="dc-cash-table-card">
+    <header>
+      <div><strong>Mesa {{ fila.mesa.numero_mesa }}</strong><small>{{ fila.sesiones|length }} invitado(s) activo(s)</small></div>
+      <div class="dc-cash-table-total"><small>Total mesa</small><strong>${{ fila.total|floatformat:2 }}</strong></div>
+    </header>
+    <a class="dc-cash-main-button" href="{% url 'admin:pedidos_solicitudpago_cobrar_desde_caja' %}?mesa={{ fila.mesa.pk }}">Cobrar toda la mesa</a>
+    <div class="dc-cash-guests">
+      {% for item in fila.sesiones %}
+      <div><span><strong>{{ item.sesion.alias }}</strong><small>{{ item.pedidos }} pedido(s) · {{ item.productos }} producto(s)</small></span><b>${{ item.total|floatformat:2 }}</b><a href="{% url 'admin:pedidos_solicitudpago_cobrar_desde_caja' %}?mesa={{ fila.mesa.pk }}&sesion={{ item.sesion.pk }}">Cobrar individual</a></div>
+      {% endfor %}
+    </div>
+  </section>
+  {% empty %}<div class="dc-cash-empty">No hay mesas con sesiones activas para facturar.</div>{% endfor %}
+</div>
+{% endblock %}

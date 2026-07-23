@@ -1,0 +1,41 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block extrahead %}
+  <link rel="stylesheet" href="{% static 'css/unfold-custom.css' %}">
+  <script src="{% static 'js/admin-sidebar.js' %}" defer></script>
+  <meta name="don-chugo-bills-live-url" content="{% url 'admin:pedidos_solicitudpago_cuentas_pendientes_en_vivo' %}">
+  <meta name="don-chugo-bills-url" content="{% url 'admin:pedidos_solicitudpago_changelist' %}">
+  <script src="{% static 'js/admin-bills-live.js' %}?v=20260719-2" defer></script>
+  <script src="{% static 'js/admin-toasts.js' %}" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% endblock %}
+
+{% block messages %}
+  {% if messages %}
+    <div class="dc-toast-stack" id="dcToastStack" aria-live="polite" aria-atomic="true">
+      {% for message in messages %}
+        <div class="dc-toast dc-toast--{{ message.tags|default:'info' }}" role="status">
+          <span class="dc-toast-raw" hidden>{{ message|striptags }}</span>
+          <span class="material-symbols-outlined dc-toast-icon" aria-hidden="true"></span>
+          <div class="dc-toast-copy">
+            <strong></strong>
+            <small></small>
+          </div>
+          <button type="button" class="dc-toast-close" aria-label="Cerrar notificación">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+          <span class="dc-toast-progress" aria-hidden="true"></span>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock messages %}
+
+{% block branding %}
+  <h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+      DON CHUGO
+    </a>
+  </h1>
+{% endblock %}

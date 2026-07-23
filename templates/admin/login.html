@@ -1,0 +1,337 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}Acceso administrativo · Don Chugo{% endblock %}
+{% block bodyclass %}{{ block.super }} login{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --don-wine: #c81024;
+      --don-wine-dark: #861714;
+      --don-gold: #a96b1f;
+      --don-cream: #f7f4ef;
+      --don-ink: #2c2421;
+      --don-muted: #786d67;
+    }
+
+    body.login {
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(201,169,97,.18), transparent 27rem),
+        linear-gradient(145deg, #651715, var(--don-wine) 58%, #d51a2f);
+    }
+
+    body.login #header,
+    body.login .breadcrumbs { display: none; }
+
+    body.login #container {
+      min-height: 100vh;
+      width: 100%;
+      padding: 0;
+      background: transparent;
+    }
+
+    body.login #main,
+    body.login #content-start {
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    body.login #content {
+      min-height: 100vh;
+      max-width: none;
+      margin: 0;
+      padding: 32px;
+      display: grid;
+      place-items: center;
+      box-sizing: border-box;
+    }
+
+    .don-login-shell {
+      width: min(940px, 100%);
+      min-height: 570px;
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 28px;
+      background: #fff;
+      box-shadow: 0 30px 80px rgba(29,10,12,.36);
+    }
+
+    .don-login-brand {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 54px;
+      overflow: hidden;
+      color: #fff;
+      background:
+        linear-gradient(180deg, rgba(49,13,17,.12), rgba(49,13,17,.75)),
+        linear-gradient(145deg, #c81024, #651715);
+    }
+
+    .don-login-brand::before,
+    .don-login-brand::after {
+      content: "";
+      position: absolute;
+      border: 1px solid rgba(201,169,97,.28);
+      border-radius: 50%;
+    }
+    .don-login-brand::before { width: 350px; height: 350px; right: -175px; top: -110px; }
+    .don-login-brand::after { width: 260px; height: 260px; left: -155px; bottom: -110px; }
+
+    .don-mark,
+    .don-brand-copy,
+    .don-brand-foot { position: relative; z-index: 1; }
+
+    .don-mark {
+      width: fit-content;
+      height: auto;
+      color: #fff;
+      font-size: 34px;
+      line-height: 1;
+    }
+
+    .don-eyebrow {
+      margin: 0 0 12px;
+      color: var(--don-gold);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .don-brand-copy h1 {
+      margin: 0;
+    }
+
+    .don-brand-logo {
+      display: block;
+      width: min(320px, 100%);
+      height: auto;
+    }
+
+    .don-brand-copy p {
+      max-width: 310px;
+      margin: 22px 0 0;
+      color: rgba(255,255,255,.72);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .don-brand-foot {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,.58);
+      font-size: 12px;
+    }
+
+    .don-brand-foot::before {
+      content: "";
+      width: 26px;
+      height: 1px;
+      background: var(--don-gold);
+    }
+
+    .don-login-form {
+      display: flex;
+      align-items: center;
+      padding: 58px;
+      background: linear-gradient(180deg, #fff, #fdfbf8);
+    }
+
+    .don-form-inner { width: 100%; }
+
+    .don-form-inner h2 {
+      margin: 0 0 9px;
+      color: var(--don-ink);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 31px;
+      font-weight: 600;
+      letter-spacing: -.02em;
+    }
+
+    .don-form-intro {
+      margin: 0 0 32px;
+      color: var(--don-muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .don-field { margin-bottom: 20px; }
+    .don-field label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--don-ink);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .don-input-wrap { position: relative; }
+    .don-input-wrap input {
+      width: 100%;
+      height: 50px;
+      padding: 0 46px 0 16px;
+      border: 1px solid #ded5cd;
+      border-radius: 12px;
+      outline: 0;
+      background: #fff;
+      color: var(--don-ink);
+      font-size: 15px;
+      box-sizing: border-box;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .don-input-wrap input:focus {
+      border-color: var(--don-wine);
+      box-shadow: 0 0 0 4px rgba(118,43,47,.1);
+    }
+
+    .don-password-toggle {
+      position: absolute;
+      right: 9px;
+      top: 50%;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      transform: translateY(-50%);
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: #82756f;
+      cursor: pointer;
+    }
+    .don-password-toggle:hover { background: var(--don-cream); color: var(--don-wine); }
+
+    .don-submit {
+      width: 100%;
+      min-height: 52px;
+      margin-top: 8px;
+      border: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--don-wine), var(--don-wine-dark));
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .01em;
+      cursor: pointer;
+      box-shadow: 0 12px 24px rgba(118,43,47,.22);
+      transition: transform .15s, box-shadow .2s;
+    }
+    .don-submit:hover { transform: translateY(-1px); box-shadow: 0 15px 28px rgba(118,43,47,.29); }
+
+    .don-error {
+      margin: 0 0 22px;
+      padding: 12px 14px;
+      border: 1px solid #efc7c7;
+      border-radius: 11px;
+      background: #fff2f1;
+      color: #8c272d;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .don-secure {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+      margin: 24px 0 0;
+      color: #92857e;
+      font-size: 11px;
+    }
+
+    @media (max-width: 760px) {
+      body.login #content { padding: 18px; }
+      .don-login-shell { min-height: 0; grid-template-columns: 1fr; border-radius: 22px; }
+      .don-login-brand { min-height: 190px; padding: 28px; }
+      .don-mark { font-size: 27px; }
+      .don-brand-logo { width: 230px; }
+      .don-brand-copy p, .don-brand-foot { display: none; }
+      .don-login-form { padding: 34px 26px 38px; }
+    }
+  </style>
+{% endblock %}
+
+{% block branding %}{% endblock %}
+{% block nav-global %}{% endblock %}
+
+{% block content %}
+<main class="don-login-shell" aria-labelledby="login-title">
+  <section class="don-login-brand" aria-label="Don Chugo Café Bar">
+    <div class="don-mark" aria-hidden="true">☕</div>
+    <div class="don-brand-copy">
+      <p class="don-eyebrow">Café · Bar · Cocina</p>
+      <h1>
+        <img class="don-brand-logo"
+             src="{% static 'img/brand/logo-don-chugo-blanco-v3.png' %}"
+             alt="Don Chugo Café Bar">
+      </h1>
+      <p>Todo el control de tu operación en un solo lugar, sencillo y seguro.</p>
+    </div>
+    <div class="don-brand-foot">Panel de administración</div>
+  </section>
+
+  <section class="don-login-form">
+    <div class="don-form-inner">
+      <h2 id="login-title">Bienvenido</h2>
+      <p class="don-form-intro">Ingresa tus credenciales para acceder al panel.</p>
+
+      {% if form.errors %}
+        <div class="don-error" role="alert">
+          El usuario o la contraseña no son correctos. Inténtalo nuevamente.
+        </div>
+      {% endif %}
+
+      <form action="{{ app_path }}" method="post" id="login-form">
+        {% csrf_token %}
+        <div class="don-field">
+          <label for="id_username">Usuario</label>
+          <div class="don-input-wrap">
+            <input type="text" name="username" value="{{ form.username.value|default:'' }}"
+                   autofocus autocapitalize="none" autocomplete="username"
+                   maxlength="150" required id="id_username">
+          </div>
+        </div>
+
+        <div class="don-field">
+          <label for="id_password">Contraseña</label>
+          <div class="don-input-wrap">
+            <input type="password" name="password" autocomplete="current-password"
+                   required id="id_password">
+            <button class="don-password-toggle" type="button" id="toggle-password"
+                    aria-label="Mostrar contraseña" aria-pressed="false">◉</button>
+          </div>
+        </div>
+
+        <input type="hidden" name="next" value="{{ next }}">
+        <button class="don-submit" type="submit">Entrar</button>
+      </form>
+
+      <p class="don-secure"><span aria-hidden="true">◇</span> Acceso exclusivo para personal autorizado</p>
+    </div>
+  </section>
+</main>
+
+<script>
+  (function () {
+    const button = document.getElementById('toggle-password');
+    const input = document.getElementById('id_password');
+    if (!button || !input) return;
+    button.addEventListener('click', function () {
+      const visible = input.type === 'text';
+      input.type = visible ? 'password' : 'text';
+      button.setAttribute('aria-pressed', String(!visible));
+      button.setAttribute('aria-label', visible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+      input.focus();
+    });
+  }());
+</script>
+{% endblock %}

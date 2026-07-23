@@ -1,0 +1,23 @@
+/* Floating help button styles */
+.mm-help-btn {
+  position: fixed;
+  right: 18px;
+  bottom: 90px;
+  z-index: 1200;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--mm-green, #C81024);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+  border: none;
+  font-size: 1.25rem;
+}
+.mm-help-btn:active { transform: translateY(1px); }
+
+/* Modal tweaks for help content */
+#_mmHelpModal .modal-dialog { max-width: 520px; }
+#_mmHelpModal .modal-body { font-size: .95rem; }

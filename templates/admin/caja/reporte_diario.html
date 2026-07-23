@@ -1,0 +1,106 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="dc-caja-page">
+  <div class="dc-caja-heading">
+    <div>
+      <p class="dc-caja-eyebrow">DON CHUGO · CAFÉ BAR</p>
+      <h1>Reporte diario de caja</h1>
+      <p>Resumen completo de ventas y cobros del {{ fecha|date:"d/m/Y" }}.</p>
+    </div>
+    <div class="dc-caja-controls no-print">
+      <form method="get">
+        <label for="fechaCaja">Fecha</label>
+        <input id="fechaCaja" type="date" name="fecha" value="{{ fecha|date:'Y-m-d' }}">
+        <button type="submit">Ver reporte</button>
+      </form>
+      <button type="button" class="dc-caja-print" onclick="window.print()">🖨 Imprimir cierre</button>
+    </div>
+  </div>
+
+  <div class="dc-caja-cards">
+    <article><span>Total cobrado</span><strong>${{ total_cobrado|floatformat:2 }}</strong><small>{{ movimientos|length }} transacción{{ movimientos|length|pluralize:"es" }}</small></article>
+    <article><span>Ventas</span><strong>${{ total_consumo|floatformat:2 }}</strong><small>Sin incluir propinas</small></article>
+    <article><span>Efectivo</span><strong>${{ total_efectivo|floatformat:2 }}</strong><small>Ingreso registrado</small></article>
+    <article><span>Tarjeta / digital</span><strong>${{ total_tarjeta|floatformat:2 }}</strong><small>Pagos no efectivos</small></article>
+    <article><span>Propinas</span><strong>${{ total_propinas|floatformat:2 }}</strong><small>Adicional a ventas</small></article>
+  </div>
+
+  <div class="dc-caja-grid">
+    <section class="dc-caja-panel">
+      <h2>Resumen de pedidos</h2>
+      <div class="dc-caja-metrics">
+        <div><strong>{{ resumen_pedidos.total|default:0 }}</strong><span>Pedidos recibidos</span></div>
+        <div><strong>{{ resumen_pedidos.pagados|default:0 }}</strong><span>Pedidos pagados</span></div>
+        <div><strong>{{ resumen_pedidos.cancelados|default:0 }}</strong><span>Cancelados</span></div>
+        <div><strong>{{ resumen_pedidos.productos|default:0 }}</strong><span>Productos vendidos</span></div>
+      </div>
+    </section>
+    <section class="dc-caja-panel">
+      <h2>Totales por forma de pago</h2>
+      {% for metodo, total in por_metodo %}
+        <div class="dc-caja-method"><span>{{ metodo }}</span><strong>${{ total|floatformat:2 }}</strong></div>
+      {% empty %}
+        <p class="dc-caja-empty">No hay cobros procesados en esta fecha.</p>
+      {% endfor %}
+    </section>
+  </div>
+
+  <section class="dc-caja-panel dc-caja-movements dc-caja-products">
+    <h2>Detalle de productos vendidos</h2>
+    <div class="dc-caja-table-wrap">
+      <table>
+        <thead>
+          <tr><th>Producto</th><th>Categoría</th><th>Cantidad</th><th>Precio promedio</th><th>Total vendido</th></tr>
+        </thead>
+        <tbody>
+          {% for producto in productos_vendidos %}
+          <tr>
+            <td><strong>{{ producto.producto__nombre }}</strong></td>
+            <td>{{ producto.producto__categoria__nombre }}</td>
+            <td>{{ producto.cantidad }}</td>
+            <td>${{ producto.precio_promedio|floatformat:2 }}</td>
+            <td><strong>${{ producto.total|floatformat:2 }}</strong></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="dc-caja-empty">Todavía no existen productos cobrados para este día.</td></tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr><td colspan="4">TOTAL DE PRODUCTOS</td><td>${{ total_consumo|floatformat:2 }}</td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </section>
+
+  <section class="dc-caja-panel dc-caja-movements">
+    <h2>Movimientos del día</h2>
+    <div class="dc-caja-table-wrap">
+      <table>
+        <thead><tr><th>Hora</th><th>Comprobante</th><th>Mesa</th><th>Cliente</th><th>Tipo</th><th>Método</th><th>Venta</th><th>Propina</th><th>Total</th></tr></thead>
+        <tbody>
+          {% for mov in movimientos %}
+          <tr>
+            <td>{{ mov.cobro.fecha_hora|date:"H:i" }}</td>
+            <td>#{{ mov.cobro.id|stringformat:"06d" }}</td>
+            <td>{% if mov.cobro.mesa %}Mesa {{ mov.cobro.mesa.numero_mesa }}{% else %}—{% endif %}</td>
+            <td>{{ mov.cliente }}</td>
+            <td>{{ mov.cobro.get_tipo_display }}</td>
+            <td>{{ mov.cobro.metodo_pago.descripcion }}</td>
+            <td>${{ mov.consumo|floatformat:2 }}</td>
+            <td>${{ mov.propina|floatformat:2 }}</td>
+            <td><strong>${{ mov.total|floatformat:2 }}</strong></td>
+          </tr>
+          {% empty %}<tr><td colspan="9" class="dc-caja-empty">Todavía no existen cobros procesados para este día.</td></tr>{% endfor %}
+        </tbody>
+        <tfoot><tr><td colspan="8">TOTAL DEL CIERRE</td><td>${{ total_cobrado|floatformat:2 }}</td></tr></tfoot>
+      </table>
+    </div>
+  </section>
+
+  <footer class="dc-caja-signatures">
+    <div>Elaborado por<br><span></span></div><div>Verificado por<br><span></span></div>
+  </footer>
+</div>
+{% endblock %}

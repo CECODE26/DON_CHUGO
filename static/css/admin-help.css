@@ -1,0 +1,80 @@
+.dc-help { --help-red:#c81024; --help-wine:#861714; --help-cream:#f7f4ef; --help-ink:#2c211e; }
+
+.dc-help-trigger {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 0 18px 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--help-red), var(--help-wine));
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(134,23,20,.28);
+}
+.dc-help-trigger:hover { transform: translateY(-2px); box-shadow:0 15px 32px rgba(134,23,20,.34); }
+.dc-help-trigger-icon {
+  display:grid; place-items:center; width:30px; height:30px; border-radius:50%;
+  background:rgba(255,255,255,.16); font-family:Georgia,serif; font-size:18px;
+}
+
+.dc-help-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 84px;
+  z-index: 102;
+  width: min(390px, calc(100vw - 32px));
+  max-height: min(650px, calc(100vh - 112px));
+  overflow: hidden auto;
+  border: 1px solid #eadfd9;
+  border-radius: 20px;
+  background:#fffdfc;
+  box-shadow:0 24px 65px rgba(45,22,15,.24);
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(12px) scale(.98);
+  transform-origin:bottom right;
+  transition:opacity .18s, transform .18s, visibility .18s;
+}
+.dc-help-panel.is-open { opacity:1; visibility:visible; transform:none; }
+
+.dc-help-header {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  padding:22px 22px 20px; color:#fff;
+  background:linear-gradient(125deg,var(--help-red),#651715);
+}
+.dc-help-header h2 { margin:4px 0 0!important; color:#fff!important; font-family:Georgia,serif; font-size:22px!important; }
+.dc-help-kicker { color:#f0c88e; font-size:10px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
+.dc-help-close { width:34px; height:34px; border:0; border-radius:50%; background:rgba(255,255,255,.13); color:#fff; font-size:24px; line-height:1; cursor:pointer; }
+.dc-help-close:hover { background:rgba(255,255,255,.23); }
+.dc-help-content { padding:20px; }
+.dc-help-context { margin-bottom:18px; padding:14px; border-left:3px solid #a96b1f; border-radius:10px; background:var(--help-cream); }
+.dc-help-context-label { display:block; margin-bottom:4px; color:#8d5517; font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.dc-help-context strong { display:block; color:var(--help-ink); font-size:14px; }
+.dc-help-context p { margin:4px 0 0; color:#766a66; font-size:12px; line-height:1.5; }
+.dc-help-search-label { display:block; margin-bottom:7px; color:var(--help-ink); font-size:12px; font-weight:700; }
+.dc-help-search { width:100%; height:42px; margin-bottom:14px; padding:0 13px!important; border:1px solid #d7c9c3!important; border-radius:10px!important; background:#fff!important; color:var(--help-ink)!important; }
+.dc-help-search:focus { border-color:var(--help-red)!important; outline:0; box-shadow:0 0 0 3px rgba(200,16,36,.1)!important; }
+.dc-help-topics { display:grid; gap:8px; }
+.dc-help-topics button { width:100%; padding:12px 13px; border:1px solid #eadfd9; border-radius:10px; background:#fff; color:var(--help-ink); text-align:left; font-size:13px; font-weight:600; cursor:pointer; }
+.dc-help-topics button::after { content:"→"; float:right; color:var(--help-red); }
+.dc-help-topics button:hover { border-color:#efb9bf; background:#fbeaec; color:var(--help-red); }
+.dc-help-answer h3 { margin:12px 0!important; color:var(--help-ink)!important; font-family:Georgia,serif; font-size:19px!important; }
+.dc-help-answer ol { margin:0 0 18px; padding-left:20px; color:#655955; font-size:13px; line-height:1.6; }
+.dc-help-answer li { margin-bottom:7px; }
+.dc-help-back { padding:0; border:0; background:transparent; color:var(--help-red); font-size:12px; font-weight:700; cursor:pointer; }
+.dc-help-action { display:block; padding:11px 14px; border-radius:10px; background:linear-gradient(135deg,var(--help-red),var(--help-wine)); color:#fff!important; text-align:center; font-size:13px; font-weight:700; text-decoration:none!important; }
+.dc-help-footer { padding:12px 20px; border-top:1px solid #eee4df; color:#998c86; background:#fcf8f5; text-align:center; font-size:10px; }
+.dc-help-overlay { position:fixed; inset:0; z-index:101; background:rgba(35,20,17,.18); backdrop-filter:blur(1px); }
+
+@media (max-width:640px) {
+  .dc-help-trigger { right:16px; bottom:16px; }
+  .dc-help-panel { right:16px; bottom:76px; max-height:calc(100vh - 96px); }
+}

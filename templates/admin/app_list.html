@@ -1,0 +1,68 @@
+{% load i18n %}
+
+{% if app_list %}
+  <div class="dc-admin-accordion overflow-auto">
+    {% for app in app_list %}
+      <div
+        class="app-{{ app.app_label }} module{% if app.app_url in request.path %} current-app{% endif %}"
+        x-data="{ open: {% if app.app_url in request.path %}true{% else %}false{% endif %} }"
+      >
+        {% if app.models and not app.hidden %}
+          <div class="dc-admin-accordion-group">
+            <button
+              type="button"
+              class="dc-admin-accordion-trigger"
+              @click="open = !open"
+              :aria-expanded="open.toString()"
+            >
+              <span>{{ app.name }}</span>
+              <span
+                class="material-symbols-outlined dc-admin-accordion-chevron"
+                :class="{ 'is-open': open }"
+                aria-hidden="true"
+              >expand_more</span>
+            </button>
+
+            <ol
+              class="dc-admin-accordion-content"
+              x-cloak
+              x-show="open"
+              x-transition:enter="dc-accordion-enter"
+              x-transition:enter-start="dc-accordion-enter-start"
+              x-transition:enter-end="dc-accordion-enter-end"
+              x-transition:leave="dc-accordion-leave"
+              x-transition:leave-start="dc-accordion-leave-start"
+              x-transition:leave-end="dc-accordion-leave-end"
+            >
+              {% for model in app.models %}
+                {% if not model.hidden %}
+                  <li class="model-{{ model.object_name|lower }}{% if model.admin_url in request.path|urlencode %} current-model{% endif %}">
+                    {% if model.header %}
+                      <h3 class="font-medium my-3 text-gray-900 text-sm dark:text-gray-200">{{ model.header }}</h3>
+                    {% endif %}
+
+                    {% if model.admin_url %}
+                      <a
+                        href="{{ model.admin_url }}"
+                        id="link-{{ app.app_label }}-{{ model.object_name|lower }}"
+                        class="block border border-transparent flex h-11 items-center px-3 py-2 rounded-md transition-all {% if model.admin_url in request.path|urlencode %}bg-gray-100 font-semibold text-primary-500 dark:border dark:border-gray-800 dark:bg-white/[.02]{% else %}text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200{% endif %}"
+                      >
+                        {% if model.icon %}<span class="material-symbols-outlined md-18 mr-3">{{ model.icon }}</span>{% endif %}
+                        <span class="text-sm">{{ model.name }}</span>
+                        {% if model.badge %}<span class="bg-red-600 font-semibold ml-2 px-1 rounded-sm text-xs text-white">{{ model.badge }}</span>{% endif %}
+                      </a>
+                    {% else %}
+                      {{ model.name }}
+                    {% endif %}
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ol>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>{% translate 'You don’t have permission to view or edit anything.' %}</p>
+{% endif %}

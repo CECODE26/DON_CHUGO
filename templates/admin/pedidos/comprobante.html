@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Comprobante #{{ sol.pk }}</title>
+<style>
+  *{box-sizing:border-box} body{margin:0;padding:22px;background:#eee6df;color:#111;font-family:"Courier New",monospace}
+  .actions{display:flex;justify-content:center;gap:10px;margin-bottom:18px}
+  button,a{padding:10px 16px;border:0;border-radius:9px;font-weight:700;cursor:pointer;text-decoration:none}
+  button{background:#c81024;color:#fff} a{background:#fff;color:#651715;border:1px solid #d8c8c0}
+  .ticket{width:80mm;max-width:100%;margin:auto;padding:5mm;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.15)}
+  .brand{text-align:center;font-size:18px;font-weight:900}.sub{text-align:center;font-size:11px;margin:4px 0 12px}
+  .meta{padding:8px 0;border-top:1px dashed #111;border-bottom:1px dashed #111;font-size:12px;line-height:1.55}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin:9px 0}td{padding:5px 0;border-bottom:1px dotted #aaa}td:last-child{text-align:right}
+  .mods{font-size:10px;color:#444}.totals{border-top:1px dashed #111;padding-top:7px;font-size:12px}.row{display:flex;justify-content:space-between;margin:4px 0}.grand{font-size:17px;font-weight:900;border-top:2px solid #111;padding-top:7px}
+  .thanks{text-align:center;margin-top:15px;font-size:11px}.legal{text-align:center;margin-top:8px;font-size:9px;color:#555}
+  @page{size:80mm auto;margin:0}@media print{body{padding:0;background:#fff}.actions{display:none}.ticket{width:80mm;box-shadow:none;padding:4mm}}
+</style>
+</head>
+<body>
+<div class="actions"><button onclick="window.print()">Imprimir comprobante</button><a href="{% url 'admin:pedidos_solicitudpago_changelist' %}">Volver</a></div>
+<article class="ticket">
+  <div class="brand">DON CHUGO</div><div class="sub">CAFÉ · BAR</div>
+  <div class="meta">COMPROBANTE #{{ sol.pk|stringformat:"06d" }}<br>FECHA: {{ sol.fecha_hora|date:"d/m/Y H:i" }}<br>MESA: {% if mesa %}{{ mesa.numero_mesa }}{% else %}—{% endif %}<br>MÉTODO: {{ sol.metodo_pago|default:"—" }}</div>
+  <table>
+    {% for pedido in pedidos %}{% for detalle in pedido.detalles.all %}
+    <tr><td>{{ detalle.cantidad }} × {{ detalle.producto.nombre }}{% if detalle.modificadores.all %}<div class="mods">{% for mod in detalle.modificadores.all %}{{ mod.nombre_display }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>{% endif %}</td><td>${{ detalle.subtotal_calculado|floatformat:2 }}</td></tr>
+    {% endfor %}{% endfor %}
+  </table>
+  <div class="totals">
+    <div class="row"><span>Subtotal</span><span>${{ subtotal|floatformat:2 }}</span></div>
+    {% if descuento_total %}<div class="row"><span>Descuento</span><span>-${{ descuento_total|floatformat:2 }}</span></div>{% endif %}
+    {% if propina %}<div class="row"><span>Propina</span><span>${{ propina|floatformat:2 }}</span></div>{% endif %}
+    <div class="row grand"><span>TOTAL</span><span>${{ total_final|floatformat:2 }}</span></div>
+  </div>
+  <div class="thanks">¡Gracias por tu visita!</div>
+  <div class="legal">Comprobante interno. No sustituye una factura electrónica.</div>
+</article>
+</body>
+</html>

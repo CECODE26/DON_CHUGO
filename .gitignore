@@ -1,0 +1,47 @@
+# =========================
+# DJANGO / PYTHON
+# =========================
+__pycache__/
+*.pyc
+*.log
+db.sqlite3
+
+# =========================
+# ENTORNOS VIRTUALES
+# =========================
+env/
+venv/
+.venv/
+
+# =========================
+# VARIABLES DE ENTORNO
+# =========================
+.env
+*.env
+
+# =========================
+# IDEs
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# DOCKER
+# =========================
+*.log
+
+# =========================
+# ARCHIVOS DEL SISTEMA
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# FRONTEND (SI USAN REACT)
+# =========================
+node_modules/.env
+*.sqlite3
+
+# Respaldos locales de la base de datos (pueden contener datos sensibles)
+backups/
+mobile-client/

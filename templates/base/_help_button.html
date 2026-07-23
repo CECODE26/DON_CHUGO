@@ -1,0 +1,30 @@
+{% load static %}
+<!-- Help button partial: floating button + modal -->
+<link href="{% static 'css/help-button.css' %}" rel="stylesheet">
+
+<!-- Floating help button -->
+{# role: 'cliente' if request.sesion_cliente else 'staff' #}
+<button class="mm-help-btn" aria-label="Ayuda" data-role="{% if request.sesion_cliente %}cliente{% else %}staff{% endif %}">
+  <i class="bi bi-question-lg"></i>
+</button>
+
+<!-- Modal reused across the app -->
+<div class="modal fade" id="_mmHelpModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ayuda</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" id="_mmHelpBody" style="font-size:.95rem;">
+        <!-- contenido inyectado por JS -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary" id="_mmHelpAction">Acción</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/help-button.js' %}"></script>

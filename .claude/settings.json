@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(lsof -nP -iTCP:8081 -iTCP:8083 -sTCP:LISTEN)",
+      "Bash(curl -s -o /dev/null -w \"Django \\(backend\\): %{http_code}\\\\n\" -m 5 http://127.0.0.1:8002/bienvenida/?mesa=1)",
+      "Bash(kill 75125 78202)",
+      "Bash(curl -s -o /dev/null -w \"Django \\(backend\\): %{http_code}\\\\n\" -m 5 \"http://127.0.0.1:8002/bienvenida/?mesa=1\")",
+      "Bash(npx expo *)",
+      "Bash(curl -s -m 15 -o /dev/null -w \"%{http_code} %{content_type}\\\\n\" \"http://127.0.0.1:8081/\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -m 5 \"http://10.40.15.36:8002/bienvenida/?mesa=1\")",
+      "Bash(pkill -f \"expo start\")",
+      "Bash(curl -s -o /dev/null -w \"Django por IP nueva: %{http_code}\\\\n\" -m 8 \"http://10.4.3.182:8002/bienvenida/?mesa=1\")",
+      "Bash(curl -s -o /dev/null -w \"Expo web: %{http_code}\\\\n\" -m 15 \"http://127.0.0.1:8081/\")",
+      "Bash(curl -s -m 8 \"http://127.0.0.1:8002/menu/?mesa=1\" -o /dev/null -w \"menú responde: %{http_code}\\\\n\")",
+      "Bash(curl -s -m 8 \"http://127.0.0.1:8002/bienvenida/?mesa=1\" -o /dev/null -w \"bienvenida responde: %{http_code}\\\\n\")",
+      "Bash(grep -v \":.*showToast\\(\\\\`\\\\|showToast\\('\")",
+      "Bash(curl -s -m 8 \"http://127.0.0.1:8002/static/css/mochi.css\")",
+      "Bash(curl -s -m 8 -c /tmp/dc2.txt \"http://127.0.0.1:8002/bienvenida/?mesa=1\")"
+    ]
+  }
+}

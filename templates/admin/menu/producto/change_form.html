@@ -1,0 +1,78 @@
+{% extends "admin/change_form.html" %}
+
+{% block field_sets %}
+  <div class="don-product-photo-card">
+    <div>
+      <h2>Foto del producto</h2>
+      <p>Selecciona una foto clara. Se recomienda formato horizontal 4:3.</p>
+    </div>
+    <label class="don-product-photo-drop" id="donProductPhotoDrop">
+      <input type="file" id="donProductPhotoFile" accept="image/jpeg,image/png,image/webp" hidden>
+      <img id="donProductPhotoPreview" alt="Vista previa del producto">
+      <span id="donProductPhotoText">📷 Pulsa aquí o arrastra una foto</span>
+      <small>JPG, PNG o WEBP · máximo 5 MB</small>
+    </label>
+    <div id="donProductPhotoStatus" aria-live="polite"></div>
+  </div>
+  <div class="don-product-card-grid">
+    {% for fieldset in adminform %}
+      {% if "tab" not in fieldset.classes %}
+        {% include "admin/includes/fieldset.html" %}
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endblock %}
+
+{% block admin_change_form_document_ready %}
+  {{ block.super }}
+  <script>
+  (() => {
+    const drop = document.getElementById('donProductPhotoDrop');
+    const fileInput = document.getElementById('donProductPhotoFile');
+    const urlInput = document.getElementById('id_imagen_url');
+    const preview = document.getElementById('donProductPhotoPreview');
+    const text = document.getElementById('donProductPhotoText');
+    const status = document.getElementById('donProductPhotoStatus');
+    if (!drop || !fileInput || !urlInput) return;
+
+    function showPreview(url) {
+      if (!url) return;
+      preview.src = url;
+      preview.style.display = 'block';
+      text.textContent = 'Cambiar foto';
+    }
+    showPreview(urlInput.value);
+
+    async function upload(file) {
+      if (!file) return;
+      if (!file.type.startsWith('image/')) { status.textContent = 'Selecciona un archivo de imagen.'; return; }
+      if (file.size > 5 * 1024 * 1024) { status.textContent = 'La imagen supera los 5 MB.'; return; }
+      status.textContent = 'Subiendo imagen…';
+      drop.classList.add('is-uploading');
+      const body = new FormData();
+      body.append('imagen', file);
+      try {
+        const response = await fetch('{% url "admin:menu_producto_subir_imagen" %}', {
+          method: 'POST', body,
+          headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value}
+        });
+        const data = await response.json();
+        if (!response.ok || !data.ok) throw new Error(data.error || 'No se pudo subir la imagen.');
+        urlInput.value = data.url;
+        urlInput.dispatchEvent(new Event('change', {bubbles:true}));
+        showPreview(data.url);
+        status.textContent = '✓ Foto cargada. Pulsa Guardar para aplicarla al producto.';
+        status.className = 'is-success';
+      } catch (error) {
+        status.textContent = error.message;
+        status.className = 'is-error';
+      } finally { drop.classList.remove('is-uploading'); }
+    }
+
+    fileInput.addEventListener('change', () => upload(fileInput.files[0]));
+    ['dragenter','dragover'].forEach(name => drop.addEventListener(name, event => { event.preventDefault(); drop.classList.add('is-dragging'); }));
+    ['dragleave','drop'].forEach(name => drop.addEventListener(name, event => { event.preventDefault(); drop.classList.remove('is-dragging'); }));
+    drop.addEventListener('drop', event => upload(event.dataTransfer.files[0]));
+  })();
+  </script>
+{% endblock %}

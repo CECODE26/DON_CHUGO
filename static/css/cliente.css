@@ -1,0 +1,537 @@
+/* =============================================
+   Don Chugo — Cliente App Styles
+   Estilos exclusivos de la interfaz del cliente final.
+   Depende de mochi.css (tokens) cargado antes en cliente_base.html.
+   ============================================= */
+
+/* ---- Bottom Nav — barra de navegación inferior fija ---- */
+/* position: fixed + width/max-width definidos en cliente_base.html para
+   anclarlo al viewport visible y respetar el ancho del shell. */
+.client-bottom-nav {
+  height: 72px;
+  /* añade espacio para el home indicator de iPhone */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: calc(72px + env(safe-area-inset-bottom, 0px));
+  background: var(--mm-white);
+  border-top: 1px solid var(--mm-border);
+  display: flex;
+  box-shadow: 0 -5px 18px rgba(81,36,12,.08);
+}
+
+/* Encabezado común de las vistas posteriores al menú */
+.dc-client-page-header {
+  min-height:62px;
+  color:#fff;
+  background:linear-gradient(125deg,var(--mm-green),var(--mm-green-dark))!important;
+  border-bottom:1px solid rgba(255,255,255,.15)!important;
+  box-shadow:0 5px 18px rgba(101,23,21,.18);
+}
+.dc-client-page-header a,
+.dc-client-page-header .pedidos-header-link,
+.dc-client-page-header .pedidos-meta,
+.dc-client-page-header span { color:#fff!important; }
+.dc-client-page-header .dc-page-table {
+  padding:.3rem .65rem;border:1px solid rgba(255,255,255,.2);border-radius:99px;
+  background:rgba(255,255,255,.12);font-size:.72rem;font-weight:700;
+}
+
+.cart-item,
+.order-card,
+.cart-total-bar { box-shadow:var(--shadow-sm); }
+.cart-item:hover,
+.order-card:hover { border-color:#e8b3b8; }
+.cart-total-bar { border-top:3px solid var(--mm-gold); }
+.client-bottom-nav .nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--mm-text-muted);
+  font-size: .7rem;
+  font-weight: 500;
+  position: relative;
+  transition: color .2s;
+}
+.client-bottom-nav .nav-item i { font-size: 1.25rem; }
+.client-bottom-nav .nav-item.active { color: var(--mm-green); }
+.client-bottom-nav .nav-item.active i {
+  filter: drop-shadow(0 0 6px rgba(200,16,36,.3));
+}
+/* Badge numérico sobre el ícono del carrito en el nav inferior */
+.nav-badge {
+  position: absolute;
+  top: 6px; right: calc(50% - 18px);
+  background: var(--mm-gold);
+  color: #fff;
+  font-size: .6rem;
+  font-weight: 700;
+  min-width: 16px; height: 16px;
+  border-radius: 99px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px;
+}
+
+/* ---- Welcome Screen — pantalla de bienvenida por QR (bienvenida.html) ---- */
+.welcome-hero {
+  background: linear-gradient(160deg, var(--mm-green-dark) 0%, var(--mm-green) 100%);
+  padding: 3rem 1.5rem 2rem;
+  text-align: center;
+  color: #fff;
+}
+.welcome-hero .logo-emoji { font-size: 3.5rem; line-height: 1; margin-bottom: .75rem; }
+.welcome-hero h1 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: .25rem;
+}
+.welcome-hero .subtitle { font-size: .95rem; opacity: .85; }
+
+/* Tarjeta blanca que "flota" sobre el hero verde con margen negativo */
+.welcome-card {
+  margin: -1.5rem 1rem 0;
+  border-radius: var(--radius-xl);
+  background: var(--mm-white);
+  box-shadow: var(--shadow-lg);
+  padding: 1.75rem 1.5rem;
+  position: relative;
+  z-index: 2;
+}
+/* Pill verde claro que muestra el número e identificador de la mesa */
+.mesa-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  background: var(--mm-green-pale);
+  color: var(--mm-green);
+  border-radius: var(--radius-pill);
+  padding: .35rem .9rem;
+  font-size: .8rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
+/* ---- Option Cards — tarjetas seleccionables (mesa ocupada: "Soy nuevo" / "Ya tengo cuenta") ---- */
+.option-card {
+  border: 2px solid var(--mm-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  cursor: pointer;
+  transition: all .2s;
+  text-align: center;
+}
+.option-card:hover, .option-card.selected {
+  border-color: var(--mm-green);
+  background: var(--mm-green-pale);
+}
+.option-card i { font-size: 1.75rem; color: var(--mm-green); margin-bottom: .5rem; }
+
+/* ---- PIN display — cuadrícula de 4 dígitos para mostrar el PIN de la mesa ---- */
+.pin-display {
+  display: flex;
+  justify-content: center;
+  gap: .75rem;
+  margin: 1rem 0;
+}
+.pin-digit {
+  width: 52px; height: 62px;
+  background: var(--mm-green-pale);
+  border: 2px solid var(--mm-green);
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--mm-green-dark);
+  font-family: var(--font-mono);
+}
+
+/* ---- Category Tabs — fila horizontal scrolleable de filtros de categoría (menu.html) ---- */
+.category-tabs {
+  display: flex;
+  gap: .5rem;
+  overflow-x: auto;
+  padding: 1rem 1rem .5rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.category-tabs::-webkit-scrollbar { display: none; }
+.cat-tab {
+  white-space: nowrap;
+  border: 1.5px solid var(--mm-border);
+  background: var(--mm-white);
+  color: var(--mm-text-muted);
+  border-radius: var(--radius-pill);
+  padding: .4rem .9rem;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  text-decoration: none;
+  display: inline-block;
+}
+.cat-tab:hover, .cat-tab.active {
+  background: var(--mm-green);
+  border-color: var(--mm-green);
+  color: #fff;
+}
+
+/* ---- Product Card — tarjeta de producto en la cuadrícula del menú ---- */
+.product-column {
+  display: flex;
+}
+
+.product-card {
+  background: var(--mm-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--mm-border);
+  overflow: hidden;
+  transition: box-shadow .2s, transform .2s;
+  cursor: pointer;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.product-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.product-card.unavailable { opacity: .55; pointer-events: none; }
+
+.product-img {
+  width: 100%; aspect-ratio: 4/3;
+  object-fit: cover;
+  background: var(--mm-cream-dark);
+}
+.product-img-placeholder {
+  width: 100%; aspect-ratio: 4/3;
+  background: var(--mm-cream-dark);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem;
+  color: var(--mm-text-muted);
+}
+.product-body {
+  padding: .75rem;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.product-name {
+  min-height: 2.5em;
+  margin-bottom: .2rem;
+  overflow: hidden;
+  font-size: .9rem;
+  font-weight: 600;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.product-desc {
+  min-height: 3em;
+  margin-bottom: .5rem;
+  overflow: hidden;
+  color: var(--mm-text-muted);
+  font-size: .75rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.product-actions { margin-top: auto !important; }
+.product-price { font-weight: 700; color: var(--mm-green); font-size: 1rem; }
+.product-unavail { font-size: .7rem; color: var(--mm-danger); font-weight: 600; }
+
+/* Botón circular "+" que abre el modal del producto sin navegar a otra página */
+.add-btn {
+  width: 32px; height: 32px;
+  background: var(--mm-green);
+  color: #fff;
+  border: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 700;
+  cursor: pointer; transition: background .2s;
+  flex-shrink: 0;
+}
+.add-btn:hover { background: var(--mm-green-dark); }
+
+/* ---- Product Modal — bottom sheet con imagen, modificadores, notas y cantidad ---- */
+.modal-product-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+.modifier-group { margin-bottom: 1.25rem; }
+.modifier-group-title {
+  font-weight: 700; font-size: .85rem;
+  margin-bottom: .5rem;
+  display: flex; align-items: center; gap: .4rem;
+}
+.modifier-option {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .6rem .75rem;
+  border: 1.5px solid var(--mm-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: .4rem;
+  cursor: pointer;
+  transition: all .15s;
+}
+.modifier-option:has(input:checked),
+.modifier-option.selected {
+  border-color: var(--mm-green);
+  background: var(--mm-green-pale);
+}
+.modifier-option input { display: none; }
+.modifier-extra { font-size: .75rem; color: var(--mm-gold); font-weight: 600; }
+
+/* Control de cantidad: botones − y + con el valor numérico centrado */
+.qty-control {
+  display: flex; align-items: center; gap: .75rem;
+}
+.qty-btn {
+  width: 36px; height: 36px;
+  border: 2px solid var(--mm-border);
+  background: var(--mm-white);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+  color: var(--mm-text);
+}
+.qty-btn:hover { border-color: var(--mm-green); color: var(--mm-green); }
+.qty-value { font-size: 1.1rem; font-weight: 700; min-width: 24px; text-align: center; }
+
+/* ---- Cart — ítems y barra de total del carrito (carrito.html) ---- */
+.cart-item {
+  background: var(--mm-white);
+  border: 1px solid var(--mm-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: .75rem;
+}
+.cart-item-name { font-weight: 600; font-size: .9rem; }
+.cart-item-mods { font-size: .75rem; color: var(--mm-text-muted); margin-top: .25rem; }
+.cart-item-price { font-weight: 700; color: var(--mm-green); }
+.cart-total-bar {
+  background: var(--mm-white);
+  border: 1px solid var(--mm-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+}
+
+/* ---- Order Tracking — tarjetas y badges de estado del pedido (pedidos.html) ---- */
+.order-card {
+  background: var(--mm-white);
+  border: 1px solid var(--mm-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: .75rem;
+}
+.pedidos-header {
+  background: var(--mm-white);
+  border-bottom: 1px solid var(--mm-border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.pedidos-header-link {
+  color: var(--mm-text);
+  text-decoration: none;
+}
+.pedidos-title { font-size: 1rem; }
+.pedidos-meta { font-size: .8rem; color: var(--mm-text-muted); }
+.pedidos-meta-pin { font-family: var(--font-mono); }
+.paid-banner {
+  background: #EAFAF1;
+  border: 1px solid #2ECC71;
+  color: #1E8449;
+  border-radius: var(--radius-sm);
+  padding: .7rem .85rem;
+  margin-bottom: .85rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+.paid-banner-icon { font-size: 1.1rem; }
+.paid-banner-text { flex: 1; font-size: .82rem; line-height: 1.25; }
+.paid-banner-btn { background: #1E8449; color: #fff; font-size: .75rem; }
+.empty-orders-icon {
+  font-size: 3rem;
+  color: var(--mm-border);
+  margin-bottom: 1rem;
+  display: block;
+}
+.empty-orders-title { color: var(--mm-text-muted); }
+.empty-orders-text { font-size: .875rem; color: var(--mm-text-muted); }
+.pedido-num { font-size: .875rem; }
+.pedido-step-icon { font-size: .6rem; }
+.pedido-step-labels {
+  font-size: .68rem;
+  color: var(--mm-text-muted);
+  padding: 0 2px;
+}
+.pedido-item-row {
+  font-size: .85rem;
+  padding: .25rem 0;
+  border-bottom: 1px solid var(--mm-border);
+}
+.pedido-item-subtotal { color: var(--mm-text-muted); }
+.pedido-waiting {
+  font-size: .8rem;
+  color: var(--mm-warning);
+}
+.pedido-waiting-dot {
+  width: .5rem;
+  height: .5rem;
+  background: var(--mm-warning);
+}
+.pedido-ready {
+  font-size: .8rem;
+  color: var(--mm-success);
+}
+.pedido-total-amount { color: var(--mm-green); }
+.btn-cream { background: var(--mm-cream-dark); }
+.bill-modal-dialog { max-width: 390px; }
+.bill-modal-note { font-size: .875rem; color: var(--mm-text-muted); margin-bottom: 1.25rem; }
+.pedido-section-label {
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--mm-text-muted);
+}
+.pedido-option-card { cursor: pointer; }
+.pedido-option-icon { font-size: 1.5rem; color: var(--mm-green); }
+.pedido-option-title { font-size: .83rem; }
+.pedido-option-subtitle { font-size: .72rem; color: var(--mm-text-muted); }
+.pedido-method-btn {
+  flex: 1;
+  padding: .6rem .4rem;
+  font-size: .8rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--mm-border);
+  background: var(--mm-cream-dark);
+  cursor: pointer;
+}
+.pedido-action-note { font-size: .75rem; color: var(--mm-text-muted); text-align: center; margin-top: .4rem; margin-bottom: 0; }
+.pedido-paypal-wrap { display: none; }
+.pedido-paypal-option { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--mm-text-muted); }
+.pedido-paypal-preset {
+  flex: 1;
+  padding: .5rem .4rem;
+  font-size: .8rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--mm-border);
+  background: var(--mm-cream-dark);
+  cursor: pointer;
+}
+.pedido-paypal-prefix { background: var(--mm-cream-dark); border: 1px solid var(--mm-border); }
+.pedido-paypal-input { font-size: .85rem; }
+.pedido-paypal-total { font-size: .85rem; }
+.pedido-paypal-total-label { color: var(--mm-green); }
+.pedido-paypal-note { font-size: .72rem; color: var(--mm-text-muted); text-align: center; margin-top: .4rem; margin-bottom: 0; }
+.pedido-paypal-error {
+  font-size: .8rem;
+  color: #721c24;
+  background: #FDEDEC;
+  border-radius: 6px;
+  padding: .4rem .75rem;
+  margin-top: .5rem;
+  display: none;
+}
+.pedido-desglose { display: none; }
+.pedido-desglose-title { font-size: .9rem; }
+.pedido-desglose-items { font-size: .82rem; }
+.pedido-desglose-empty {
+  font-size: .82rem;
+  color: var(--mm-text-muted);
+  text-align: center;
+  padding: .5rem 0;
+  display: none;
+}
+.pedido-desglose-hr { border-top: 1px dashed var(--mm-border); }
+.pedido-desglose-row { font-size: .82rem; }
+.pedido-desglose-descuento { color: var(--mm-success); }
+.pedido-desglose-propina { color: var(--mm-gold); }
+.pedido-desglose-total {
+  border-top: 2px solid var(--mm-border);
+  font-size: 1.05rem;
+}
+.pedido-desglose-total-amount { color: var(--mm-green); }
+.cuenta-modal-dialog { max-width: 390px; }
+.cuenta-ticket-icon {
+  font-size: 3.5rem;
+  line-height: 1;
+  color: var(--mm-green);
+  display: block;
+}
+.cuenta-subtitle { font-size: .82rem; color: var(--mm-text-muted); margin: 0; }
+.cuenta-ticket-box {
+  background: var(--mm-cream);
+  border-radius: var(--radius-sm);
+  padding: .75rem 1rem;
+  font-size: .82rem;
+  margin-bottom: 1rem;
+}
+.cuenta-row-label { color: var(--mm-text-muted); }
+.cuenta-row-divider { border-bottom: 1px dashed var(--mm-border); margin-bottom: .5rem; }
+.cuenta-items { margin-bottom: .5rem; }
+.cuenta-total-row {
+  font-size: .9rem;
+  border-top: 1px dashed var(--mm-border);
+  padding-top: .5rem;
+}
+.cuenta-total { color: var(--mm-green); }
+.order-status-badge {
+  border-radius: var(--radius-pill);
+  padding: .25rem .75rem;
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.status-recibido  { background: #EBF3FD; color: #2471A3; }
+.status-preparando{ background: #FEF9E7; color: #CA8A04; }
+.status-listo     { background: #EAFAF1; color: #1E8449; }
+.status-entregado { background: #F2F3F4; color: #566573; }
+.status-pagado    { background: #E8F7ED; color: #176B3A; }
+.status-cancelado { background: #FDEDEC; color: #C0392B; }
+
+/* ---- Progress Stepper — indicador visual de 3 etapas: recibido / preparando / listo ---- */
+.order-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: .75rem 0;
+}
+.step-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--mm-border);
+  background: var(--mm-white);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem;
+  font-weight: 700;
+  color: var(--mm-text-muted);
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+.step-dot.done {
+  background: var(--mm-green);
+  border-color: var(--mm-green);
+  color: #fff;
+}
+.step-dot.current {
+  border-color: var(--mm-green);
+  color: var(--mm-green);
+  box-shadow: 0 0 0 3px var(--mm-green-pale);
+}
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--mm-border);
+}
+/* Línea completada: se colorea en verde cuando el estado siguiente ya fue alcanzado */
+.step-line.done { background: var(--mm-green); }

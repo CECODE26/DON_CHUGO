@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cocina · Pedido #{{ pedido.pk }}</title>
+<style>
+  *{box-sizing:border-box} body{margin:0;padding:22px;background:#eee6df;color:#111;font-family:"Courier New",monospace}
+  .actions{display:flex;justify-content:center;gap:10px;margin-bottom:18px}
+  button,a{padding:10px 16px;border:0;border-radius:9px;font-weight:700;cursor:pointer;text-decoration:none}
+  button{background:#c81024;color:#fff} a{background:#fff;color:#651715;border:1px solid #d8c8c0}
+  .ticket{width:80mm;max-width:100%;margin:auto;padding:5mm;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.15)}
+  h1{margin:0;text-align:center;font-size:22px;letter-spacing:2px} .brand{text-align:center;font-weight:700;margin-bottom:10px}
+  .meta{padding:9px 0;border-top:2px dashed #111;border-bottom:2px dashed #111;font-size:14px;line-height:1.6}
+  .meta strong{font-size:18px}.item{padding:10px 0;border-bottom:1px dashed #777}.item-title{font-size:17px;font-weight:900}
+  .mods,.notes{margin-top:4px;font-size:13px}.notes{padding:5px;border:1px solid #111;font-weight:700}
+  .footer{text-align:center;margin-top:12px;font-size:11px}
+  @page{size:80mm auto;margin:0}
+  @media print{body{padding:0;background:#fff}.actions{display:none}.ticket{width:80mm;box-shadow:none;padding:4mm}}
+</style>
+</head>
+<body>
+<form id="printStatusForm" hidden>{% csrf_token %}</form>
+<div class="actions"><button id="printKitchenButton" onclick="window.print()">Imprimir cocina</button><a href="{% url 'admin:pedidos_pedido_changelist' %}">Volver</a></div>
+<article class="ticket">
+  <div class="brand">DON CHUGO · CAFÉ BAR</div>
+  <h1>COCINA</h1>
+  <div class="meta">
+    <strong>PEDIDO #{{ pedido.pk|stringformat:"06d" }}</strong><br>
+    MESA: <strong>{{ pedido.sesion.mesa.numero_mesa }}</strong><br>
+    HORA: {{ pedido.fecha_hora_ingreso|date:"d/m/Y H:i" }}<br>
+    CLIENTE: {{ pedido.sesion.alias }}
+  </div>
+  {% for detalle in pedido.detalles.all %}
+  <section class="item">
+    <div class="item-title">{{ detalle.cantidad }} × {{ detalle.producto.nombre }}</div>
+    {% if detalle.modificadores.all %}<div class="mods">{% for mod in detalle.modificadores.all %}+ {{ mod.nombre_display }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+    {% if detalle.notas %}<div class="notes">NOTA: {{ detalle.notas }}</div>{% endif %}
+  </section>
+  {% endfor %}
+  <div class="footer">*** FIN DEL PEDIDO ***</div>
+</article>
+<script>
+  let printStarted = false;
+  let statusSent = false;
+
+  window.addEventListener('beforeprint', () => { printStarted = true; });
+  window.addEventListener('afterprint', async () => {
+    if (!printStarted || statusSent) return;
+    statusSent = true;
+    const button = document.getElementById('printKitchenButton');
+    try {
+      const response = await fetch('{% url "admin:pedidos_pedido_ticket_cocina_impreso" pedido.pk %}', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': document.querySelector('#printStatusForm input[name="csrfmiddlewaretoken"]').value,
+          'Accept': 'application/json'
+        }
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.error || 'No se pudo actualizar el pedido');
+      button.textContent = data.estado === 'preparando' ? 'Impreso · Preparando' : `Impreso · ${data.estado_display}`;
+    } catch (error) {
+      statusSent = false;
+      button.textContent = 'Imprimir nuevamente';
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+{% load static %}
+<div class="dc-help" id="dc-help" data-current-path="{{ request.path }}">
+  <button type="button" class="dc-help-trigger" id="dc-help-trigger"
+          aria-controls="dc-help-panel" aria-expanded="false">
+    <span class="dc-help-trigger-icon" aria-hidden="true">?</span>
+    <span>Ayuda</span>
+  </button>
+
+  <aside class="dc-help-panel" id="dc-help-panel" aria-hidden="true" aria-label="Asistente de ayuda">
+    <header class="dc-help-header">
+      <div>
+        <span class="dc-help-kicker">Asistente Don Chugo</span>
+        <h2>¿En qué te ayudo?</h2>
+      </div>
+      <button type="button" class="dc-help-close" id="dc-help-close" aria-label="Cerrar ayuda">×</button>
+    </header>
+
+    <div class="dc-help-content">
+      <section class="dc-help-context" id="dc-help-context">
+        <span class="dc-help-context-label">Ayuda para esta pantalla</span>
+        <strong id="dc-help-context-title">Panel de administración</strong>
+        <p id="dc-help-context-text">Selecciona una opción para comenzar.</p>
+      </section>
+
+      <label class="dc-help-search-label" for="dc-help-search">Buscar una guía</label>
+      <input type="search" id="dc-help-search" class="dc-help-search"
+             placeholder="Ej. producto, mesa o empleado" autocomplete="off">
+
+      <div class="dc-help-topics" id="dc-help-topics">
+        <button type="button" data-topic="productos">Agregar un producto</button>
+        <button type="button" data-topic="mesas">Crear una mesa y ver su QR</button>
+        <button type="button" data-topic="empleados">Administrar empleados</button>
+        <button type="button" data-topic="pedidos">Revisar pedidos</button>
+      </div>
+
+      <section class="dc-help-answer" id="dc-help-answer" hidden>
+        <button type="button" class="dc-help-back" id="dc-help-back">← Volver a las guías</button>
+        <h3 id="dc-help-answer-title"></h3>
+        <ol id="dc-help-answer-steps"></ol>
+        <a class="dc-help-action" id="dc-help-action" href="#">Ir a la sección</a>
+      </section>
+    </div>
+
+    <footer class="dc-help-footer">Ayuda interna · Panel administrativo</footer>
+  </aside>
+  <div class="dc-help-overlay" id="dc-help-overlay" hidden></div>
+</div>
+<script src="{% static 'js/admin-help.js' %}"></script>

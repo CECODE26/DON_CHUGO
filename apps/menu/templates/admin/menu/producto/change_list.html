@@ -1,0 +1,28 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% comment %}
+Añade un selector de Categoría en la barra superior (junto a la búsqueda),
+con el mismo estilo que los selects de Unfold (appearance-none evita la
+doble flecha). Oculta el botón "Filters" del panel lateral.
+{% endcomment %}
+
+{% block search %}
+    {{ block.super }}
+
+    <div class="flex items-center">
+        <label class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            {% trans "Categoría:" %}
+            <select title="{% trans 'Filtrar por categoría' %}"
+                    class="appearance-none bg-white border cursor-pointer font-medium pl-3 pr-8 py-2 rounded-md shadow-sm text-gray-500 text-sm truncate hover:text-gray-700 focus:outline-none dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    onchange="const p = new URLSearchParams(window.location.search); if (this.value) { p.set('categoria', this.value); } else { p.delete('categoria'); } window.location.search = p.toString();">
+                <option value="">{% trans "Todas" %}</option>
+                {% for categoria in categorias %}
+                    <option value="{{ categoria.id }}" {% if request.GET.categoria == categoria.id|stringformat:'s' %}selected{% endif %}>{{ categoria.nombre }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+{% endblock %}
+
+{% block filters %}{% endblock %}
