@@ -14,6 +14,15 @@ set -euo pipefail
 VPS="root@31.220.98.255"
 URL="https://dccoffe.store"
 
+# Guardián: los comentarios Django {# #} partidos en varias líneas se imprimen
+# como texto visible en la página. Si existe alguno, se cancela el deploy.
+fugas=$(grep -rn '{#' --include='*.html' apps templates 2>/dev/null | grep -v '#}' || true)
+if [ -n "$fugas" ]; then
+  echo "✗ DEPLOY CANCELADO — comentarios Django multilínea (se verían como texto):"
+  echo "$fugas"
+  exit 1
+fi
+
 echo "→ Desplegando Don Chugo en $VPS ..."
 ssh -o ConnectTimeout=10 "$VPS" '
   set -e
