@@ -10,13 +10,13 @@
    El contenido se refresca cada 3 segundos via polling (pollMesas).
    ========================================================================={% endcomment %}
 
-{% block title %}Floor Plan{% endblock %}
-{% block page_title %}Floor Plan{% endblock %}
+{% block title %}Panel Mesas{% endblock %}
+{% block page_title %}Panel Mesas{% endblock %}
 
 
 {# ── Navegación lateral del panel gerente ── #}
 {% block sidebar_nav %}
-<a href="{% url 'gerente:floor_plan' %}" class="active"><i class="bi bi-grid-fill"></i> Floor Plan</a>
+<a href="{% url 'gerente:floor_plan' %}" class="active"><i class="bi bi-grid-fill"></i> Panel Mesas</a>
 <div class="nav-section-label">Gestión</div>
 <a href="{% url 'gerente:productos' %}"><i class="bi bi-basket-fill"></i> Gestión de Menú</a>
 <div class="nav-section-label">Reportes</div>
@@ -39,12 +39,12 @@
 {# ── Contenedor principal: grid de mesas (izquierda) + panel lateral (derecha) ── #}
 <div class="d-flex gap-3" style="height:calc(100vh - 56px - 3rem); overflow:hidden;">
 
-  <!-- Floor Plan -->
+  <!-- Panel Mesas -->
   {# ── Columna principal: encabezado, leyenda y grilla de mesas ── #}
   <div class="flex-grow-1 overflow-y-auto">
     <div class="d-flex align-items-center justify-content-between mb-3">
       <div>
-        <h5 class="fw-bold mb-0">Floor Plan</h5>
+        <h5 class="fw-bold mb-0">Panel Mesas</h5>
         {# Resumen dinámico actualizado por pollMesas(): "X activas · Y libres" #}
         <p style="font-size:.8rem; color:var(--mm-text-muted); margin-bottom:0;" id="mesasSummary">Cargando…</p>
       </div>
