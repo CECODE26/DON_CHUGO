@@ -12,17 +12,40 @@ from .models import DetallePedido, Pedido, SolicitudPago
 from apps.mesas.models import Mesa
 
 
+class RangoFechaPedidoFilter(admin.SimpleListFilter):
+    """Por defecto la bandeja muestra solo los pedidos de HOY (evita el ruido
+    del historial). 'Historial completo' habilita ver todo lo anterior."""
+    title = "rango de fechas"
+    parameter_name = "rango"
+
+    def lookups(self, request, model_admin):
+        return (("todos", "Historial completo"),)
+
+    def queryset(self, request, queryset):
+        if self.value() == "todos":
+            return queryset
+        hoy = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        return queryset.filter(fecha_hora_ingreso__gte=hoy)
+
+    def choices(self, changelist):
+        # Renombra la opción por defecto ("Todo") a "Solo hoy" para que sea claro.
+        for choice in super().choices(changelist):
+            if choice["query_string"] == changelist.get_query_string(remove=[self.parameter_name]):
+                choice["display"] = "Solo hoy"
+            yield choice
+
+
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
     """Bandeja de Caja con acceso al ticket térmico de cocina."""
 
     list_display = (
-        "numero", "alerta_pedido", "mesa", "fecha_hora_ingreso",
+        "numero", "alerta_pedido", "mesa", "origen_pedido", "fecha_hora_ingreso",
         "cambio_estado_rapido", "total", "imprimir_cocina",
     )
-    list_filter = ("estado", "fecha_hora_ingreso")
+    list_filter = (RangoFechaPedidoFilter, "estado", "modalidad", "fecha_hora_ingreso")
     search_fields = ("id", "sesion__mesa__numero_mesa", "sesion__alias")
-    list_select_related = ("sesion", "sesion__mesa")
+    list_select_related = ("sesion", "sesion__mesa", "modalidad")
     ordering = ("-fecha_hora_ingreso",)
     change_list_template = "admin/pedidos/pedido/change_list.html"
     readonly_fields = ("contenido_del_pedido", "fecha_hora_ingreso")
@@ -39,14 +62,29 @@ class PedidoAdmin(admin.ModelAdmin):
         }),
     )
 
+    @admin.display(description="Origen", ordering="modalidad__descripcion")
+    def origen_pedido(self, obj):
+        """Distingue los pedidos asistidos (tomados por el personal) de los del QR."""
+        if obj.modalidad and obj.modalidad.descripcion == "asistido":
+            return format_html(
+                '<span style="display:inline-flex;align-items:center;gap:4px;'
+                'padding:3px 10px;border-radius:999px;background:#fbf0dd;'
+                'color:#8d5517;font-size:11px;font-weight:800;white-space:nowrap;">'
+                '🤝 Asistido</span>'
+            )
+        return format_html(
+            '<span style="display:inline-flex;align-items:center;gap:4px;'
+            'padding:3px 10px;border-radius:999px;background:#eef1f4;'
+            'color:#5b6770;font-size:11px;font-weight:700;white-space:nowrap;">'
+            '📱 QR</span>'
+        )
+
     def get_queryset(self, request):
-        qs = super().get_queryset(request).prefetch_related(
+        # El recorte a "solo hoy" vive en RangoFechaPedidoFilter (list_filter):
+        # un GET param propio aquí rompía el changelist de Django (redirect ?e=1).
+        return super().get_queryset(request).prefetch_related(
             "detalles__producto", "detalles__modificadores"
         )
-        if not request.GET.get("mostrar_todos"):
-            hoy = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-            qs = qs.filter(fecha_hora_ingreso__gte=hoy)
-        return qs
 
     def _live_signature(self):
         return "|".join(
