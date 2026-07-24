@@ -220,8 +220,14 @@
   <div class="flex-grow-1 overflow-y-auto">
     <div class="d-flex align-items-center justify-content-between mb-3">
       <div>
-        <h5 class="fw-bold mb-0">Mapa de Mesas</h5>
+        <h5 class="fw-bold mb-0">{% if vista == 'asistido' %}Pedido asistido{% else %}Mapa de Mesas{% endif %}</h5>
         <p style="font-size:.8rem; color:var(--mm-text-muted); margin:0;" id="mesasSummary">Cargando…</p>
+        {% if vista == 'asistido' %}
+        <p style="font-size:.78rem; color:var(--mm-green); margin:.15rem 0 0;">
+          <i class="bi bi-hand-index-thumb"></i>
+          Toca una mesa <strong>libre</strong> para asignarla a un cliente nuevo y tomarle el pedido
+        </p>
+        {% endif %}
       </div>
     </div>
     {# ── Leyenda de colores (clickeable → filtra el grid por estado) ── #}
@@ -661,6 +667,10 @@ function showToast(msg, tipo='success') {
 
 // ── Variables globales de estado ─────────────────────────────────────────────
 const CSRF = getCsrf();
+// Modo "Pedido asistido": tocar una mesa libre inicia el alta de cliente y
+// encadena directo a la toma del pedido (cliente nuevo sin QR).
+const IS_VISTA_ASISTIDO = {% if vista == 'asistido' %}true{% else %}false{% endif %};
+let _asistidoMesaNumero = null; // número de la mesa elegida en el atajo asistido
 let currentMesaId = null;    // mesa actualmente seleccionada en el panel lateral
 let currentTab = 'sesiones'; // pestaña activa del panel
 let panelData = null;        // último JSON recibido de detalle_mesa()
@@ -750,6 +760,18 @@ const estadoStyles = {
 // silent=true se usa en actualizaciones automáticas (polling) para no abrir
 // el panel si el mesero ya lo cerró.
 async function selectMesa(id, numero, silent=false) {
+  // Atajo del modo asistido: una mesa LIBRE abre directo el modal de alias
+  // del cliente (sin panel lateral); el detalle se carga en segundo plano.
+  if (!silent && IS_VISTA_ASISTIDO) {
+    const tile = document.getElementById(`mesa-tile-${id}`);
+    if (tile && tile.dataset.estadoVisual === 'libre') {
+      currentMesaId = id;
+      _asistidoMesaNumero = numero;
+      abrirAgregarCliente();
+      selectMesa(id, numero, true);
+      return;
+    }
+  }
   currentMesaId = id;
   if (!silent) document.getElementById('mesaPanel').style.display = 'flex';
   try {
@@ -1037,6 +1059,13 @@ async function confirmarAgregarCliente() {
     showToast(`Cliente "${alias}" agregado`,'success');
     selectMesa(currentMesaId, null, true);
     pollMesas();
+    // Modo asistido: encadenar directo a la toma del pedido del cliente recién creado
+    if (IS_VISTA_ASISTIDO && d.sesion_id) {
+      abrirAsistido(d.sesion_id, d.alias || alias);
+      if (_asistidoMesaNumero) {
+        document.getElementById('asistidoSubtitle').textContent = `Mesa ${_asistidoMesaNumero}`;
+      }
+    }
   } else {
     showToast(d.error || 'Error al agregar cliente','error');
   }

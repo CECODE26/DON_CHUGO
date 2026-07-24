@@ -546,9 +546,14 @@ def cerrar_mesa(request):
 
 @mesero_requerido
 def pedido_asistido(request):
-    """GET — renderiza la vista del mapa con el modal de pedido asistido."""
+    """GET — renderiza la vista del mapa con el modal de pedido asistido.
+
+    Muestra TODAS las mesas (libres y ocupadas): el caso principal es un
+    cliente nuevo que no puede usar el QR, al que el personal le asigna
+    una mesa libre y le toma el pedido.
+    """
     mesa_id = request.GET.get("mesa")
-    mesas = Mesa.objects.filter(estado="ocupada").order_by("numero_mesa")
+    mesas = Mesa.objects.all().order_by("numero_mesa")
     mesa = get_object_or_404(Mesa, pk=mesa_id) if mesa_id else None
     from apps.menu.models import Categoria
     categorias = Categoria.objects.prefetch_related(
