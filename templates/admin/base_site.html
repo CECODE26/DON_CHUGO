@@ -2,8 +2,7 @@
 {% load static %}
 
 {% block extrahead %}
-  {# Forzar tema claro: la marca no soporta dark mode. Debe correr antes de que
-     Alpine inicialice adminTheme ($persist lo guarda como JSON en localStorage). #}
+  {# Forzar tema claro (la marca no soporta dark mode): corre antes de que Alpine inicialice adminTheme #}
   <script>try { localStorage.setItem('adminTheme', '"light"'); } catch (e) {}</script>
   <link rel="stylesheet" href="{% static 'css/unfold-custom.css' %}">
   <script src="{% static 'js/admin-sidebar.js' %}" defer></script>
