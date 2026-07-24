@@ -23,9 +23,10 @@ ssh -o ConnectTimeout=10 "$VPS" '
   git log HEAD..origin/main --oneline
   git pull --ff-only
   grep -q "^HTTPS_ENABLED=" .env || echo "HTTPS_ENABLED=True" >> .env
-  docker-compose up --build -d
+  # El VPS usa Docker Compose v2 (docker compose); local usa v1 (docker-compose)
+  docker compose up --build -d
   echo "── Estado de los contenedores ──"
-  docker-compose ps
+  docker compose ps
 '
 
 echo "→ Verificando $URL ..."
