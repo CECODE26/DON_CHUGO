@@ -18,43 +18,40 @@
     }
 
     body.login {
-      height: 100vh !important;
-      margin: 0 !important;
+      min-height: 100vh;
+      margin: 0;
       background:
         radial-gradient(circle at 15% 15%, rgba(201,169,97,.18), transparent 27rem),
-        linear-gradient(145deg, #651715, var(--don-wine) 58%, #d51a2f) !important;
-      overflow: hidden !important;
+        linear-gradient(145deg, #651715, var(--don-wine) 58%, #d51a2f);
     }
 
-    body.login #header,
-    body.login .breadcrumbs,
-    body.login .dc-sidebar-toggle { display: none !important; }
+    /* Unfold: ocultar sidebar, botón de toggle, barra superior y breadcrumbs.
+       La barra superior y los breadcrumbs son los dos primeros hijos de #main
+       (el wrapper del contenido es el único con la clase pb-12). */
+    body.login #nav-sidebar,
+    body.login .dc-sidebar-toggle,
+    body.login #main > div:not(.pb-12) { display: none !important; }
 
-    body.login #container {
-      height: 100vh !important;
-      width: 100% !important;
-      padding: 0 !important;
-      background: transparent !important;
-      overflow: hidden !important;
-    }
-
-    body.login #main,
-    body.login #content-start {
-      height: 100vh !important;
-      width: 100% !important;
-      overflow: hidden !important;
-    }
-
-    body.login #content {
-      height: 100vh !important;
-      max-width: none !important;
-      margin: 0 !important;
-      padding: 32px !important;
+    /* Centrar el contenido en la pantalla completa, sin scroll */
+    body.login #main {
+      min-height: 100vh !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
-      box-sizing: border-box !important;
-      overflow: hidden !important;
+    }
+
+    body.login #main > div.pb-12 {
+      padding: 32px !important;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    body.login #content {
+      max-width: none;
+      margin: 0 auto;
+      padding: 0;
+      display: grid;
+      place-items: center;
     }
 
     .don-login-shell {
@@ -255,7 +252,7 @@
     }
 
     @media (max-width: 760px) {
-      body.login #content { padding: 18px; }
+      body.login #main > div.pb-12 { padding: 18px !important; }
       .don-login-shell { min-height: 0; grid-template-columns: 1fr; border-radius: 22px; }
       .don-login-brand { min-height: 190px; padding: 28px; }
       .don-mark { font-size: 27px; }
