@@ -58,6 +58,10 @@
 <nav class="dc-module-tabs" aria-label="Módulos">
   {# Cada pestaña se muestra solo a los roles que pueden entrar a ese módulo #}
   {% if request.user.rol == 'admin' %}
+  {# Gestión: el admin completo con TODOS los módulos (menú, mesas, empleados, catálogos...) #}
+  <a href="/admin/" class="dc-module-tab {% if '/admin/' in request.path and '/admin/pedidos/' not in request.path and '/admin/caja/' not in request.path %}is-active{% endif %}">
+    ⚙️ Gestión
+  </a>
   {# Caja: facturación y reporte diario (sidebar filtrado al grupo Caja) #}
   <a href="{% url 'admin:pedidos_solicitudpago_facturar_desde_caja' %}" class="dc-module-tab {% if 'facturar-desde-caja' in request.path or '/admin/caja/' in request.path or '/solicitudpago/cobrar/' in request.path %}is-active{% endif %}">
     💰 Caja
@@ -75,12 +79,6 @@
   {% if request.user.rol == 'admin' or request.user.rol == 'gerente' or request.user.rol == 'cocina' %}
   <a href="/cocina/kds/" class="dc-module-tab {% if '/cocina/' in request.path %}is-active{% endif %}">
     🍳 Cocina
-  </a>
-  {% endif %}
-  {% if request.user.rol == 'admin' %}
-  {# Gestión: el admin completo con TODOS los módulos (menú, mesas, empleados, catálogos...) #}
-  <a href="/admin/" class="dc-module-tab {% if '/admin/' in request.path and '/admin/pedidos/' not in request.path and '/admin/caja/' not in request.path %}is-active{% endif %}">
-    ⚙️ Gestión
   </a>
   {% endif %}
   <span class="dc-module-brand">DON CHUGO</span>
