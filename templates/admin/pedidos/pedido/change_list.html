@@ -8,11 +8,38 @@
   <meta name="don-chugo-orders-live-url" content="{% url 'admin:pedidos_pedido_estado_en_vivo' %}">
   <meta name="don-chugo-orders-status-url" content="{% url 'admin:pedidos_pedido_cambiar_estado' %}">
   <script src="{% static 'js/admin-orders-live.js' %}?v=20260719-2" defer></script>
+  <style>
+    .dc-btn-asistido {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 12px;
+      padding: 7px 14px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #c81024, #861714);
+      color: #fff !important;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 4px 10px rgba(134,23,20,.25);
+      transition: transform .15s, box-shadow .2s;
+    }
+    .dc-btn-asistido:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(134,23,20,.32);
+      color: #fff;
+    }
+  </style>
 {% endblock %}
 
 {% block content_title %}
   <div class="dc-orders-live-heading">
     {{ block.super }}
     <span class="dc-orders-live-badge"><i></i> Pedidos en vivo</span>
+    <a href="{% url 'mesero:pedido_asistido' %}" target="_blank" rel="noopener"
+       class="dc-btn-asistido"
+       title="Registrar un pedido a nombre de un cliente que no puede usar el menú QR">
+      ➕ Pedido asistido
+    </a>
   </div>
 {% endblock %}
