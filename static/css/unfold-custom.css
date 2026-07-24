@@ -1027,43 +1027,8 @@ a.deletelink { color: var(--dc-red) !important; }
 }
 #nav-global a:hover { border-color: var(--dc-red); background: var(--dc-soft-red); }
 
-html.dark #result_list,
-html.dark #result_list tbody,
-html.dark #result_list td,
-html.dark #result_list th,
-html.dark #toolbar,
-html.dark #changelist-form .actions { color-scheme: light !important; }
-
-/* El panel Don Chugo utiliza tema claro fijo. Neutraliza utilidades oscuras
-   residuales de Unfold en cualquier listado, formulario, modal o dashboard. */
-html.dark body,
-html.dark #main,
-html.dark #content-start,
-html.dark #content { color-scheme: light !important; }
-
-html.dark #content [class*="dark:bg-gray-"],
-html.dark #content-start [class*="dark:bg-gray-"] {
-  background-color: #fffdfa !important;
-}
-html.dark #content [class*="dark:text-gray-"],
-html.dark #content-start [class*="dark:text-gray-"] {
-  color: var(--dc-muted) !important;
-}
-html.dark #content [class*="dark:border-gray-"],
-html.dark #content-start [class*="dark:border-gray-"] {
-  border-color: var(--dc-border) !important;
-}
-
-#nav-sidebar .mb-5.mx-3 > div:first-child,
-html.dark #nav-sidebar .mb-5.mx-3 > div:first-child {
-  background: #fff !important;
-}
-#nav-sidebar .mb-5.mx-3 span,
-html.dark #nav-sidebar .mb-5.mx-3 span { color: var(--dc-wine) !important; }
-
-html.dark #nav-sidebar [class*="dark:bg-gray-"] { background-color: #fff !important; }
-html.dark #nav-sidebar [class*="dark:text-gray-"] { color: var(--dc-muted) !important; }
-html.dark #nav-sidebar [class*="dark:border-gray-"] { border-color: var(--dc-border) !important; }
+#nav-sidebar .mb-5.mx-3 > div:first-child { background: #fff !important; }
+#nav-sidebar .mb-5.mx-3 span { color: var(--dc-wine) !important; }
 
 /* Acción de ticket en la bandeja de Pedidos: nunca comprimir ni oscurecer. */
 #result_list a.dc-kitchen-print,
@@ -1096,3 +1061,214 @@ html.dark #result_list a.dc-kitchen-print {
   background: linear-gradient(135deg, var(--dc-red-hover), var(--dc-wine-dark)) !important;
   color: #fff !important;
 }
+
+/* ============================================================
+   MODO OSCURO DON CHUGO
+   La paleta --dc-* se redefine bajo html.dark: todas las reglas
+   que usan variables se adaptan solas. Debajo se sobreescriben
+   los colores claros que el tema original dejó fijos.
+   El modal de QR se mantiene claro a propósito (el QR necesita
+   fondo blanco para escanearse e imprimirse bien).
+   ============================================================ */
+html.dark {
+  --dc-cream: #17100e;
+  --dc-white: #211815;
+  --dc-soft-red: #3a181c;
+  --dc-ink: #f2e9e4;
+  --dc-muted: #b5a69f;
+  --dc-border: #3d2e28;
+  color-scheme: dark;
+}
+
+/* Fondo general */
+html.dark body:not(.login) {
+  background:
+    radial-gradient(circle at 100% 0, rgba(200,16,36,.09), transparent 28rem),
+    var(--dc-cream) !important;
+}
+
+/* Barra superior */
+html.dark body:not(.login) header {
+  background: rgba(23,16,14,.92) !important;
+}
+
+/* Enlaces: el vino es ilegible sobre fondo oscuro, se aclara */
+html.dark body:not(.login) a { color: #ef8290; }
+html.dark body:not(.login) a:hover { color: #f7bac1; }
+html.dark .breadcrumbs a { color: #ef8290; }
+
+/* Sidebar */
+html.dark #nav-sidebar { box-shadow: 8px 0 28px rgba(0,0,0,.4); }
+html.dark #nav-sidebar .mb-5.mx-3 > div:first-child {
+  background: #2a201c !important;
+  border-color: var(--dc-border) !important;
+}
+html.dark #nav-sidebar .mb-5.mx-3 span { color: #ef8290 !important; }
+html.dark #nav-sidebar input[type="search"] {
+  background: #2a201c !important;
+  color: var(--dc-ink) !important;
+}
+html.dark #nav-sidebar input[type="search"]::placeholder { color: #8d7d76; }
+html.dark #nav-sidebar .module > ol > li > a:first-child { color: #ef8290 !important; }
+html.dark #nav-sidebar .module ol ol a:hover { color: #f7bac1 !important; }
+html.dark .dc-admin-accordion-trigger { color: #ef8290; }
+html.dark .dc-admin-accordion-trigger:hover { color: #f7bac1; background: var(--dc-soft-red); }
+
+/* Dashboard: tarjetas de aplicaciones */
+html.dark #content .module table tr:nth-child(even) { background: #281e1a !important; }
+html.dark #content .module table caption { color: #ef8290 !important; }
+html.dark #content .module table th a { color: var(--dc-ink); }
+
+/* Listados */
+html.dark #changelist table tbody tr:nth-child(even),
+html.dark .results table tbody tr:nth-child(even) { background: #281e1a !important; }
+html.dark #result_list tbody tr { background: var(--dc-white) !important; }
+html.dark #result_list tbody tr:nth-child(even) { background: #281e1a !important; }
+html.dark #result_list tbody tr:hover { background: var(--dc-soft-red) !important; }
+html.dark #result_list tbody td,
+html.dark #result_list tbody th { color: var(--dc-muted) !important; }
+html.dark #result_list tbody a { color: #ef8290 !important; }
+html.dark #result_list tbody .text-gray-400,
+html.dark #result_list tbody .text-gray-500 { color: var(--dc-muted) !important; }
+
+/* Barra de búsqueda + acciones del listado */
+html.dark #changelist-form > .bg-gray-50 { background: var(--dc-white) !important; }
+html.dark #toolbar > div > div {
+  border-color: var(--dc-border) !important;
+  background: #2a201c !important;
+}
+html.dark #toolbar #searchbar {
+  background: #2a201c !important;
+  color: var(--dc-ink) !important;
+}
+html.dark #toolbar #searchbar::placeholder { color: #8d7d76 !important; }
+html.dark #toolbar #searchbar-submit {
+  border-left-color: var(--dc-border) !important;
+  background: #33241f !important;
+  color: #ef8290 !important;
+}
+html.dark #toolbar #searchbar-submit span { color: #ef8290 !important; }
+html.dark #changelist-form .actions select {
+  border-color: var(--dc-border) !important;
+  background-color: #2a201c !important;
+  color: var(--dc-ink) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23ef8290' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E") !important;
+}
+html.dark #changelist-form .actions button[name="index"],
+html.dark #changelist-form > .bg-gray-50 > a[x-on\:click] {
+  border-color: var(--dc-border) !important;
+  background: #2a201c !important;
+  color: #ef8290 !important;
+}
+html.dark #changelist-form .actions button[name="index"] span,
+html.dark #changelist-form > .bg-gray-50 > a[x-on\:click] span { color: #ef8290 !important; }
+
+/* Filtros */
+html.dark #changelist-filter h2 { color: #ef8290 !important; }
+html.dark #changelist-filter li.selected a { color: #f7bac1 !important; }
+
+/* Formularios */
+html.dark body:not(.login) input[type="text"],
+html.dark body:not(.login) input[type="password"],
+html.dark body:not(.login) input[type="email"],
+html.dark body:not(.login) input[type="number"],
+html.dark body:not(.login) input[type="url"],
+html.dark body:not(.login) input[type="search"],
+html.dark body:not(.login) textarea,
+html.dark body:not(.login) select {
+  border-color: var(--dc-border) !important;
+  background-color: #2a201c !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.35) !important;
+}
+html.dark body:not(.login) input[type="checkbox"] {
+  border-color: #6b5248 !important;
+}
+html.dark fieldset h2,
+html.dark .inline-group h2 { color: #ef8290 !important; }
+
+/* Desglose de pedido y badges */
+html.dark .dc-order-breakdown tfoot td { color: #f7bac1; }
+html.dark .dc-orders-live-badge { border-color: #5a2a31; color: #f7bac1; }
+html.dark .dc-order-status-select {
+  border-color: var(--dc-border) !important;
+  background-color: #2a201c !important;
+  color: var(--dc-ink) !important;
+}
+
+/* Toasts */
+html.dark .dc-toast {
+  border-color: var(--dc-border);
+  background: #241a17;
+  color: var(--dc-ink);
+  box-shadow: 0 9px 24px rgba(0,0,0,.45);
+}
+html.dark .dc-toast-copy strong { color: #f7bac1; }
+html.dark .dc-toast-copy small { color: var(--dc-muted); }
+html.dark .dc-toast-close { color: var(--dc-muted); }
+html.dark .dc-toast-close:hover { background: #33241f; color: #f7bac1; }
+
+/* Caja: reporte diario en pantalla */
+html.dark .dc-caja-page { color: var(--dc-ink); }
+html.dark .dc-caja-cards article,
+html.dark .dc-caja-panel { border-color: var(--dc-border); background: var(--dc-white); }
+html.dark .dc-caja-heading h1 { color: #f7bac1; }
+html.dark .dc-caja-heading p,
+html.dark .dc-caja-cards span,
+html.dark .dc-caja-cards small,
+html.dark .dc-caja-controls label { color: var(--dc-muted); }
+html.dark .dc-caja-cards strong { color: #f7bac1; }
+html.dark .dc-caja-panel h2 { color: #f7bac1; }
+html.dark .dc-caja-metrics div { background: #2a201c; }
+html.dark .dc-caja-metrics strong { color: #ef8290; }
+html.dark .dc-caja-metrics span { color: var(--dc-muted); }
+html.dark .dc-caja-method { border-bottom-color: var(--dc-border); }
+html.dark .dc-caja-method strong { color: #ef8290; }
+html.dark .dc-caja-movements td { border-bottom-color: var(--dc-border); }
+html.dark .dc-caja-movements tfoot td { background: #3a181c; color: #f7bac1; }
+html.dark .dc-caja-controls input,
+html.dark .dc-caja-controls button {
+  border-color: var(--dc-border);
+  background: #2a201c;
+  color: #f7bac1;
+}
+html.dark .dc-caja-nav-title { color: #ef8290; }
+html.dark .dc-caja-nav-link { color: var(--dc-muted); }
+html.dark .dc-caja-nav-link:hover,
+html.dark .dc-caja-nav-link.is-active { background: #2a201c; color: #ef8290; }
+html.dark .dc-caja-empty { background: var(--dc-white); color: var(--dc-muted); }
+html.dark .dc-caja-products tbody td:first-child { color: #d5934f; }
+
+/* Cargador de fotografías de producto */
+html.dark .don-product-photo-card { border-color: var(--dc-border); background: var(--dc-white); }
+html.dark .don-product-photo-card h2 { color: #f7bac1; }
+html.dark .don-product-photo-card p { color: var(--dc-muted); }
+html.dark .don-product-photo-drop {
+  border-color: #5a3a33;
+  background: #2a1b18;
+  color: #ef8290;
+}
+html.dark .don-product-photo-drop:hover,
+html.dark .don-product-photo-drop.is-dragging { border-color: #ef8290; background: #33201d; }
+html.dark .dc-product-list-photo { border-color: var(--dc-border); background: #2a201c; }
+html.dark .dc-product-delete-action { background: #2a201c; border-color: var(--dc-border); }
+
+/* Tarjetas del formulario de Producto */
+html.dark .don-product-card-grid .field-vista_previa .readonly {
+  border-color: #5a3a33 !important;
+  background: #2a201c !important;
+}
+
+/* Enlaces globales de navegación */
+html.dark #nav-global a {
+  border-color: #5a2a31;
+  background: #2a1b18;
+  color: #ef8290 !important;
+}
+html.dark #nav-global a:hover { background: var(--dc-soft-red); }
+
+/* Scrollbar */
+html.dark ::-webkit-scrollbar-thumb {
+  border-color: var(--dc-cream);
+  background: #6b4a3e;
+}
+html.dark ::-webkit-scrollbar-thumb:hover { background: var(--dc-red); }
