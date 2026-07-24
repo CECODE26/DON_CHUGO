@@ -2,10 +2,9 @@
   const desktopKey = 'don-chugo-admin-sidebar-closed';
 
   function restoreDesktopState() {
-    // Sidebar cerrado por defecto
-    if (localStorage.getItem(desktopKey) !== '0') {
-      document.body.classList.add('dc-sidebar-closed');
-    }
+    // Sidebar SIEMPRE cerrado por defecto
+    document.body.classList.add('dc-sidebar-closed');
+    localStorage.setItem(desktopKey, '1');
   }
 
   window.toggleDonChugoSidebar = function () {
