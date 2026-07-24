@@ -22,18 +22,30 @@ def _prioritize_orders(admin_site):
         # Unfold lo muestre y lo despliegue igual que Pedidos y Mesas.
         if app_label is None and not any(a.get("app_label") == "caja" for a in app_list):
             reporte_url = reverse("admin_reporte_caja_diario")
+            facturar_url = reverse("admin:pedidos_solicitudpago_facturar_desde_caja")
             app_list.append({
                 "name": "Caja",
                 "app_label": "caja",
-                "app_url": reporte_url,
+                "app_url": facturar_url,
                 "has_module_perms": True,
-                "models": [{
-                    "name": "Reporte y cierre diario",
-                    "object_name": "ReporteCajaDiario",
-                    "admin_url": reporte_url,
-                    "add_url": None,
-                    "view_only": True,
-                }],
+                "models": [
+                    {
+                        # Cuentas abiertas por mesa: revisar el consumo y facturar
+                        # de forma individual (por comensal) o la mesa completa.
+                        "name": "Pedidos",
+                        "object_name": "PedidosFacturar",
+                        "admin_url": facturar_url,
+                        "add_url": None,
+                        "view_only": True,
+                    },
+                    {
+                        "name": "Reporte y cierre diario",
+                        "object_name": "ReporteCajaDiario",
+                        "admin_url": reporte_url,
+                        "add_url": None,
+                        "view_only": True,
+                    },
+                ],
             })
         priority = {"pedidos": 0, "mesas": 1, "caja": 2}
         return sorted(
