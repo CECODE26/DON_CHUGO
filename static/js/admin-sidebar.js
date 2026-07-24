@@ -2,7 +2,8 @@
   const desktopKey = 'don-chugo-admin-sidebar-closed';
 
   function restoreDesktopState() {
-    if (localStorage.getItem(desktopKey) === '1') {
+    // Sidebar cerrado por defecto
+    if (localStorage.getItem(desktopKey) !== '0') {
       document.body.classList.add('dc-sidebar-closed');
     }
   }
