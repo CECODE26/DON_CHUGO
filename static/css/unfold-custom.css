@@ -109,53 +109,35 @@ body.change-list #content {
   will-change: transform;
 }
 
-@media (min-width: 1280px) {
-  .dc-sidebar-shell.is-desktop-open,
-  .dc-sidebar-shell.is-desktop-open > div {
-    width: 18rem !important;
-    min-width: 18rem !important;
-  }
-
-  .dc-sidebar-shell.is-desktop-open #nav-sidebar {
-    transform: translateX(0);
-  }
-
-  .dc-sidebar-toggle {
-    margin-left: 18rem !important;
-  }
-
-  body.dc-sidebar-closed .dc-sidebar-shell,
-  body.dc-sidebar-closed .dc-sidebar-shell > div {
-    width: 0 !important;
-    min-width: 0 !important;
-  }
-
-  body.dc-sidebar-closed .dc-sidebar-shell #nav-sidebar {
-    transform: translateX(-100%) !important;
-    pointer-events: none;
-  }
-
-  body.dc-sidebar-closed .dc-sidebar-toggle {
-    margin-left: 1.5rem !important;
-    transform: translateX(-50%) rotate(180deg) !important;
-  }
+/* Menú lateral con flechita SIEMPRE visible (cualquier tamaño de pantalla) */
+.dc-sidebar-shell.is-desktop-open,
+.dc-sidebar-shell.is-desktop-open > div {
+  width: 18rem !important;
+  min-width: 18rem !important;
 }
 
-@media (max-width: 1279px) {
-  .dc-sidebar-shell #nav-sidebar {
-    position: fixed !important;
-    z-index: 50;
-  }
+.dc-sidebar-shell.is-desktop-open #nav-sidebar {
+  transform: translateX(0);
+}
 
-  body.dc-mobile-sidebar-open .dc-sidebar-shell #nav-sidebar {
-    transform: translateX(0);
-    box-shadow: 12px 0 34px rgba(81,36,12,.2) !important;
-  }
+.dc-sidebar-toggle {
+  margin-left: 18rem !important;
+}
 
-  body.dc-mobile-sidebar-open .dc-sidebar-mobile-toggle {
-    margin-left: 18rem !important;
-    transform: translateX(-50%) !important;
-  }
+body.dc-sidebar-closed .dc-sidebar-shell,
+body.dc-sidebar-closed .dc-sidebar-shell > div {
+  width: 0 !important;
+  min-width: 0 !important;
+}
+
+body.dc-sidebar-closed .dc-sidebar-shell #nav-sidebar {
+  transform: translateX(-100%) !important;
+  pointer-events: none;
+}
+
+body.dc-sidebar-closed .dc-sidebar-toggle {
+  margin-left: 1.5rem !important;
+  transform: translateX(-50%) rotate(180deg) !important;
 }
 
 #nav-sidebar {
