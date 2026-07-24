@@ -1238,6 +1238,26 @@ html.dark .dc-caja-nav-link.is-active { background: #2a201c; color: #ef8290; }
 html.dark .dc-caja-empty { background: var(--dc-white); color: var(--dc-muted); }
 html.dark .dc-caja-products tbody td:first-child { color: #d5934f; }
 
+/* Cuentas por cobrar: listado de solicitudes y pantalla de facturar.
+   Las tarjetas y bordes ya se adaptan solos (usan variables); aquí solo
+   se aclaran los textos que quedaron fijos en vino o rojo.
+   La cabecera con degradado y los botones Cobrar/Facturar se mantienen:
+   son rojo con texto blanco y contrastan bien en ambos temas. */
+html.dark .dc-cash-print { color: #f7bac1 !important; }
+html.dark #result_list .dc-cash-actions a.dc-cash-print,
+html.dark #result_list .dc-cash-actions a.dc-cash-print .material-symbols-outlined {
+  color: #f7bac1 !important;
+}
+html.dark .dc-cash-table-card header > div:first-child > strong { color: #f7bac1; }
+html.dark .dc-cash-table-total strong { color: #ef8290; }
+html.dark .dc-cash-guests a { color: #f7bac1; }
+
+/* Acciones de fila y etiquetas de estado */
+html.dark #content .module table .addlink { color: #ef8290; }
+html.dark .deletelink,
+html.dark a.deletelink { color: #ef8290 !important; }
+html.dark .dc-order-status-saved-label { color: #6fcf8f; }
+
 /* Cargador de fotografías de producto */
 html.dark .don-product-photo-card { border-color: var(--dc-border); background: var(--dc-white); }
 html.dark .don-product-photo-card h2 { color: #f7bac1; }
