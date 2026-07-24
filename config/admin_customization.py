@@ -48,13 +48,28 @@ def _prioritize_orders(admin_site):
                 ],
             })
         priority = {"pedidos": 0, "mesas": 1, "caja": 2}
-        return sorted(
+        app_list = sorted(
             app_list,
             key=lambda app: (
                 priority.get(app.get("app_label"), 3),
                 app.get("name", ""),
             ),
         )
+
+        # Cada pestaña muestra en el sidebar SOLO su módulo: la pestaña Caja el
+        # grupo Caja, la pestaña Pedidos el grupo Pedidos. La pestaña Gestión
+        # (el resto del admin) conserva el menú completo.
+        path = request.path
+        es_caja = (
+            "/admin/caja/" in path
+            or "facturar-desde-caja" in path
+            or "/solicitudpago/cobrar/" in path
+        )
+        if es_caja:
+            return [a for a in app_list if a.get("app_label") == "caja"]
+        if path.startswith("/admin/pedidos/"):
+            return [a for a in app_list if a.get("app_label") == "pedidos"]
+        return app_list
 
     admin_site.get_app_list = MethodType(get_app_list, admin_site)
     admin_site._don_chugo_orders_first = True
