@@ -56,15 +56,22 @@
   .dc-sidebar-toggle { top: 56px !important; }
 </style>
 <nav class="dc-module-tabs" aria-label="Módulos">
+  {# Cada pestaña se muestra solo a los roles que pueden entrar a ese módulo #}
+  {% if request.user.rol == 'admin' %}
   <a href="/admin/" class="dc-module-tab {% if '/admin/' in request.path %}is-active{% endif %}">
     💰 Caja
   </a>
+  {% endif %}
+  {% if request.user.rol == 'admin' or request.user.rol == 'gerente' %}
   <a href="/gerente/floor-plan/" class="dc-module-tab {% if '/gerente/' in request.path %}is-active{% endif %}">
     🗺️ Floor Plan
   </a>
+  {% endif %}
+  {% if request.user.rol == 'admin' or request.user.rol == 'gerente' or request.user.rol == 'cocina' %}
   <a href="/cocina/kds/" class="dc-module-tab {% if '/cocina/' in request.path %}is-active{% endif %}">
     🍳 Cocina
   </a>
+  {% endif %}
   <span class="dc-module-brand">DON CHUGO</span>
 </nav>
 {% endif %}
