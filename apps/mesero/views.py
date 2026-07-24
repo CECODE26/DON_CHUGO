@@ -465,14 +465,14 @@ def _post_pago_mesa(mesa, user=None):
     # hubieran quedado pendientes con la política manual anterior.
     mesa = Mesa.objects.select_for_update().get(pk=mesa.pk)
     sesiones_pagadas = list(
-        mesa.sesiones.select_for_update().filter(estado="pagada")
+        mesa.sesiones.filter(estado="pagada")
     )
     if sesiones_pagadas:
         SesionCliente.objects.filter(
             pk__in=[sesion.pk for sesion in sesiones_pagadas]
         ).update(estado="cerrada")
 
-    sesiones_activas = list(mesa.sesiones.select_for_update().filter(estado="activa"))
+    sesiones_activas = list(mesa.sesiones.filter(estado="activa"))
 
     if not sesiones_activas:
         # Todo cobrado: la mesa puede recibir inmediatamente a nuevos clientes.
