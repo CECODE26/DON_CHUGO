@@ -19,6 +19,8 @@
     background: linear-gradient(180deg, #45100f, #651715);
     box-shadow: 0 2px 10px rgba(0,0,0,.28);
   }
+  /* !important: las reglas globales de enlaces del admin (body a { color: vino })
+     tienen más especificidad y dejaban las pestañas inactivas ilegibles. */
   .dc-module-tab {
     display: inline-flex;
     align-items: center;
@@ -26,22 +28,22 @@
     padding: 9px 20px 10px;
     border-radius: 11px 11px 0 0;
     background: rgba(255,255,255,.09);
-    color: rgba(255,255,255,.78);
+    color: rgba(255,255,255,.82) !important;
     font-family: ui-sans-serif, system-ui, sans-serif;
     font-size: 13px;
     font-weight: 600;
     line-height: 1;
-    text-decoration: none;
+    text-decoration: none !important;
     white-space: nowrap;
     transition: background .15s, color .15s;
   }
-  .dc-module-tab:hover { background: rgba(255,255,255,.18); color: #fff; }
+  .dc-module-tab:hover { background: rgba(255,255,255,.2); color: #fff !important; }
   .dc-module-tab.is-active {
     background: #f7f4ef;
-    color: #861714;
+    color: #861714 !important;
     font-weight: 800;
   }
-  html.dark .dc-module-tab.is-active { background: #17100e; color: #f7bac1; }
+  html.dark .dc-module-tab.is-active { background: #17100e; color: #f7bac1 !important; }
   .dc-module-tabs .dc-module-brand {
     margin-left: auto;
     align-self: center;
