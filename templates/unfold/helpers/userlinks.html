@@ -1,0 +1,27 @@
+{% load i18n static %}
+
+<div class="flex items-center ml-auto">
+    <div class="flex flex-row group items-center leading-none relative">
+        <div class="flex gap-4 items-center">
+            {% if environment %}
+                {% include "unfold/helpers/label.html" with text=environment.0 type=environment.1 %}
+            {% endif %}
+
+            {# Suicheo al panel del gerente (dashboard operativo) #}
+            <a href="{% url 'gerente:dashboard' %}" target="_blank" rel="noopener"
+               title="Ir al panel del gerente"
+               style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:8px; background:linear-gradient(135deg,#c81024,#861714); color:#fff; font-size:12px; font-weight:600; text-decoration:none; box-shadow:0 3px 8px rgba(134,23,20,.25);">
+                <span class="material-symbols-outlined" style="font-size:16px;">swap_horiz</span>
+                Panel gerente
+            </a>
+
+            {% include "unfold/helpers/theme_switch.html" %}
+
+            {% include "unfold/helpers/account_links.html" %}
+        </div>
+    </div>
+
+    {% if nav_global_side %}
+        {{ nav_global_side }}
+    {% endif %}
+</div>
