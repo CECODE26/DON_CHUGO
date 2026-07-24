@@ -29,13 +29,17 @@ ssh -o ConnectTimeout=10 "$VPS" '
   docker compose ps
 '
 
-echo "→ Verificando $URL ..."
-sleep 5
-code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "$URL")
-if [ "$code" = "200" ] || [ "$code" = "302" ]; then
-  echo "✅ Deploy OK — $URL respondió HTTP $code"
-else
-  echo "⚠️  $URL respondió HTTP $code — revisa los logs con:"
-  echo "    ssh $VPS 'cd /root/DON_CHUGO && docker-compose logs --tail 50 web'"
-  exit 1
-fi
+echo "→ Verificando $URL (el contenedor tarda ~20s en migrar y arrancar) ..."
+for intento in 1 2 3 4 5 6; do
+  sleep 10
+  code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "$URL" || echo 000)
+  if [ "$code" = "200" ] || [ "$code" = "302" ]; then
+    echo "✅ Deploy OK — $URL respondió HTTP $code"
+    exit 0
+  fi
+  echo "   intento $intento: HTTP $code, reintentando..."
+done
+
+echo "⚠️  $URL no respondió tras 60s — revisa los logs con:"
+echo "    ssh $VPS 'cd /root/DON_CHUGO && docker compose logs --tail 50 web'"
+exit 1
