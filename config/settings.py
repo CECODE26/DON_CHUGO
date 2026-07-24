@@ -13,12 +13,23 @@ Variables de entorno relevantes:
 import os
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+from django.core.exceptions import ImproperlyConfigured
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-default-key-change-in-production')
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # FIX: DEBUG default False (era 'True')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+# SECRET_KEY obligatoria en producción: sin fallback inseguro. En desarrollo
+# (DEBUG=True) se permite una clave dummy para no exigir .env completo.
+SECRET_KEY = os.environ.get('SECRET_KEY', '')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-solo-para-desarrollo-local'
+    else:
+        raise ImproperlyConfigured(
+            'SECRET_KEY no está definida. Agrega SECRET_KEY=... al archivo .env.'
+        )
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0').split(',')
 
