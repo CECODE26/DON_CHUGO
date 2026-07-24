@@ -40,9 +40,13 @@ class PedidoAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related(
+        qs = super().get_queryset(request).prefetch_related(
             "detalles__producto", "detalles__modificadores"
         )
+        if not request.GET.get("mostrar_todos"):
+            hoy = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            qs = qs.filter(fecha_hora_ingreso__gte=hoy)
+        return qs
 
     def _live_signature(self):
         return "|".join(
