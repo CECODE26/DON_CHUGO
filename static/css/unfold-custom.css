@@ -350,11 +350,15 @@ body.dc-sidebar-closed .dc-sidebar-toggle {
   font-weight: 700;
 }
 
+/* El título del changelist de Unfold vive dentro de un <h1> en la franja del
+   header (64px). Debe ser inline y compacto: si se estira a todo el ancho
+   (space-between), el contador "N resultados" cae a una segunda línea y
+   desalinea verticalmente toda la fila. */
 .dc-orders-live-heading {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  gap: .75rem;
+  vertical-align: middle;
 }
 
 .dc-orders-live-badge {
