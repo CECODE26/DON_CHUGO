@@ -7,14 +7,7 @@
                 {% include "unfold/helpers/label.html" with text=environment.0 type=environment.1 %}
             {% endif %}
 
-            {# Suicheo al panel del gerente (dashboard operativo) #}
-            <a href="{% url 'gerente:dashboard' %}" target="_blank" rel="noopener"
-               title="Ir al panel del gerente"
-               style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:8px; background:linear-gradient(135deg,#c81024,#861714); color:#fff; font-size:12px; font-weight:600; text-decoration:none; box-shadow:0 3px 8px rgba(134,23,20,.25);">
-                <span class="material-symbols-outlined" style="font-size:16px;">swap_horiz</span>
-                Panel gerente
-            </a>
-
+            {# La navegación entre módulos vive en las pestañas superiores (_module_tabs.html) #}
             {% include "unfold/helpers/theme_switch.html" %}
 
             {% include "unfold/helpers/account_links.html" %}

@@ -12,6 +12,8 @@
 {% endblock %}
 
 {% block messages %}
+  {# Pestañas de módulos (Caja / Floor Plan / Cocina), estilo navegador #}
+  {% include "base/_module_tabs.html" %}
   {% if messages %}
     <div class="dc-toast-stack" id="dcToastStack" aria-live="polite" aria-atomic="true">
       {% for message in messages %}

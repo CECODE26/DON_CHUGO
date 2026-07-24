@@ -1,0 +1,68 @@
+{% comment %}── Pestañas de módulos (estilo navegador) ──────────────────────────────────
+   Barra fija arriba de todo, compartida por el admin (Caja) y el panel de
+   staff (Floor Plan). Navega en la MISMA pestaña del navegador; la activa se
+   detecta por el prefijo de request.path. Solo se muestra a usuarios
+   autenticados (cada módulo pide su login la primera vez y queda recordado).
+   ────────────────────────────────────────────────────────────────────────────{% endcomment %}
+{% if request.user.is_authenticated %}
+<style>
+  body { padding-top: 44px !important; }
+  .dc-module-tabs {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 10050;
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    height: 44px;
+    padding: 7px 12px 0;
+    background: linear-gradient(180deg, #45100f, #651715);
+    box-shadow: 0 2px 10px rgba(0,0,0,.28);
+  }
+  .dc-module-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 20px 10px;
+    border-radius: 11px 11px 0 0;
+    background: rgba(255,255,255,.09);
+    color: rgba(255,255,255,.78);
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .15s, color .15s;
+  }
+  .dc-module-tab:hover { background: rgba(255,255,255,.18); color: #fff; }
+  .dc-module-tab.is-active {
+    background: #f7f4ef;
+    color: #861714;
+    font-weight: 800;
+  }
+  html.dark .dc-module-tab.is-active { background: #17100e; color: #f7bac1; }
+  .dc-module-tabs .dc-module-brand {
+    margin-left: auto;
+    align-self: center;
+    color: rgba(255,255,255,.45);
+    font-family: Georgia, serif;
+    font-size: 12px;
+    letter-spacing: .12em;
+  }
+  /* El sidebar de Unfold y su flechita son fixed: bajarlos bajo la barra */
+  .dc-sidebar-toggle { top: 56px !important; }
+</style>
+<nav class="dc-module-tabs" aria-label="Módulos">
+  <a href="/admin/" class="dc-module-tab {% if '/admin/' in request.path %}is-active{% endif %}">
+    💰 Caja
+  </a>
+  <a href="/gerente/floor-plan/" class="dc-module-tab {% if '/gerente/' in request.path %}is-active{% endif %}">
+    🗺️ Floor Plan
+  </a>
+  <a href="/cocina/kds/" class="dc-module-tab {% if '/cocina/' in request.path %}is-active{% endif %}">
+    🍳 Cocina
+  </a>
+  <span class="dc-module-brand">DON CHUGO</span>
+</nav>
+{% endif %}

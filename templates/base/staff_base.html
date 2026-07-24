@@ -37,6 +37,9 @@
 </head>
 <body class="staff-body">
 
+{# ── Pestañas de módulos (Caja / Floor Plan / Cocina), estilo navegador ── #}
+{% include "base/_module_tabs.html" %}
+
 {# ── Sidebar lateral: marca, navegación por rol y pie con el usuario activo ── #}
 <aside class="staff-sidebar" id="sidebar">
   {# Logotipo de la marca en la cabecera del sidebar #}
@@ -83,14 +86,7 @@
       <h4 class="mb-0 fw-bold" style="font-size:1rem;">{% block page_title %}Dashboard{% endblock %}</h4>
     </div>
     <div class="d-flex align-items-center gap-2">
-      {# Volver al panel de administración — solo roles con acceso al admin #}
-      {% if request.user.rol == 'admin' or request.user.rol == 'gerente' %}
-      <a href="/admin/" class="btn btn-sm d-flex align-items-center gap-1"
-         style="background:linear-gradient(135deg,#c81024,#861714); color:#fff; font-size:.78rem; font-weight:600; border-radius:8px; padding:.35rem .7rem;"
-         title="Volver al panel de administración">
-        <i class="bi bi-arrow-left-circle"></i> Volver al admin
-      </a>
-      {% endif %}
+      {# La navegación entre módulos vive en las pestañas superiores (_module_tabs.html) #}
       {# Bloque para acciones contextuales de la topbar (botones, filtros, etc.) #}
       {% block topbar_actions %}{% endblock %}
       {# Reloj en tiempo real actualizado por JS cada segundo #}
