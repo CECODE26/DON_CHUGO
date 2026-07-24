@@ -58,8 +58,8 @@
 <nav class="dc-module-tabs" aria-label="Módulos">
   {# Cada pestaña se muestra solo a los roles que pueden entrar a ese módulo #}
   {% if request.user.rol == 'admin' %}
-  {# Al admin con su menú lateral; la facturación vive en el grupo CAJA → Pedidos #}
-  <a href="/admin/" class="dc-module-tab {% if '/admin/' in request.path %}is-active{% endif %}">
+  {# Directo a CAJA → Pedidos (cuentas abiertas); el sidebar del admin queda visible ahí mismo #}
+  <a href="{% url 'admin:pedidos_solicitudpago_facturar_desde_caja' %}" class="dc-module-tab {% if '/admin/' in request.path %}is-active{% endif %}">
     💰 Caja
   </a>
   {% endif %}

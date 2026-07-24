@@ -450,13 +450,30 @@ class SolicitudPagoAdmin(admin.ModelAdmin):
             sesiones_data = []
             total_mesa = 0
             for sesion in mesa.sesiones.filter(estado="activa"):
-                pedidos = sesion.pedidos.exclude(estado="cancelado").prefetch_related("detalles")
-                total = sum(d.subtotal_calculado for p in pedidos for d in p.detalles.all())
-                productos = sum(d.cantidad for p in pedidos for d in p.detalles.all())
+                pedidos = sesion.pedidos.exclude(estado="cancelado").prefetch_related(
+                    "detalles__producto", "detalles__modificadores"
+                )
+                # Detalle del consumo para que caja pueda revisar el pedido
+                # antes de cobrar (expandible en la tarjeta del invitado).
+                items = []
+                for p in pedidos:
+                    for d in p.detalles.all():
+                        items.append({
+                            "pedido_id": p.pk,
+                            "estado": p.get_estado_display(),
+                            "cantidad": d.cantidad,
+                            "producto": d.producto.nombre,
+                            "opciones": ", ".join(m.nombre_display for m in d.modificadores.all()),
+                            "notas": d.notas,
+                            "subtotal": d.subtotal_calculado,
+                        })
+                total = sum(i["subtotal"] for i in items)
+                productos = sum(i["cantidad"] for i in items)
                 total_mesa += total
                 sesiones_data.append({
                     "sesion": sesion, "total": total,
                     "pedidos": pedidos.count(), "productos": productos,
+                    "items": items,
                 })
             filas.append({"mesa": mesa, "sesiones": sesiones_data, "total": total_mesa})
         context = {

@@ -534,6 +534,19 @@ body.dc-sidebar-closed .dc-sidebar-toggle {
 .dc-cash-guests span strong,
 .dc-cash-guests span small { display:block; }
 .dc-cash-guests a { padding:.45rem .65rem; border-radius:8px; color:var(--dc-wine); background:var(--dc-soft-red); font-weight:800; }
+/* Invitado expandible: summary con la misma grilla, y debajo el detalle del consumo */
+.dc-cash-guest { border-top:1px solid var(--dc-border); }
+.dc-cash-guest summary { display:grid; grid-template-columns:1fr auto auto; gap:.8rem; align-items:center; padding:.7rem 0; cursor:pointer; list-style:none; }
+.dc-cash-guest summary::-webkit-details-marker { display:none; }
+.dc-cash-guest summary:hover strong { color:var(--dc-red); }
+.dc-cash-items { padding:.15rem 0 .85rem; }
+.dc-cash-item { display:flex; justify-content:space-between; gap:1rem; margin:0 0 3px .3rem; padding:.4rem .6rem .4rem 1rem; border-left:3px solid var(--dc-soft-red); background:rgba(200,16,36,.025); font-size:.85rem; color:var(--dc-muted); }
+.dc-cash-item b { color:var(--dc-wine); white-space:nowrap; }
+.dc-cash-item em { color:var(--dc-red); font-style:normal; }
+html.dark .dc-cash-item { background:rgba(255,255,255,.03); }
+html.dark .dc-cash-item b { color:#f7bac1; }
+html.dark .dc-cash-item em { color:#ef8290; }
+html.dark .dc-cash-guest summary:hover strong { color:#f7bac1; }
 .dc-cash-empty { padding:2rem; border-radius:14px; background:var(--dc-white); color:var(--dc-muted); text-align:center; }
 
 @media (max-width: 768px) {

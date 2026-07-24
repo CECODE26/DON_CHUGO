@@ -3,8 +3,8 @@
 {% block content %}
 <div class="dc-cash-page">
   <div class="dc-cash-page-header">
-    <div><p>CAJA DON CHUGO</p><h1>Facturar sin solicitud previa</h1><span>Selecciona la mesa completa o un invitado para revisar el consumo y cobrar.</span></div>
-    <a href="{% url 'admin:pedidos_solicitudpago_changelist' %}">Volver</a>
+    <div><p>CAJA DON CHUGO</p><h1>Pedidos por facturar</h1><span>Toca un invitado para revisar su consumo. Cobra individual (por comensal) o la mesa completa.</span></div>
+    <a href="{% url 'admin:pedidos_solicitudpago_changelist' %}">Solicitudes de pago</a>
   </div>
   {% for fila in filas %}
   <section class="dc-cash-table-card">
@@ -15,7 +15,23 @@
     <a class="dc-cash-main-button" href="{% url 'admin:pedidos_solicitudpago_cobrar_desde_caja' %}?mesa={{ fila.mesa.pk }}">Cobrar toda la mesa</a>
     <div class="dc-cash-guests">
       {% for item in fila.sesiones %}
-      <div><span><strong>{{ item.sesion.alias }}</strong><small>{{ item.pedidos }} pedido(s) · {{ item.productos }} producto(s)</small></span><b>${{ item.total|floatformat:2 }}</b><a href="{% url 'admin:pedidos_solicitudpago_cobrar_desde_caja' %}?mesa={{ fila.mesa.pk }}&sesion={{ item.sesion.pk }}">Cobrar individual</a></div>
+      <details class="dc-cash-guest">
+        <summary>
+          <span><strong>{{ item.sesion.alias }}</strong><small>{{ item.pedidos }} pedido(s) · {{ item.productos }} producto(s) — toca para ver el detalle ▾</small></span>
+          <b>${{ item.total|floatformat:2 }}</b>
+          <a href="{% url 'admin:pedidos_solicitudpago_cobrar_desde_caja' %}?mesa={{ fila.mesa.pk }}&sesion={{ item.sesion.pk }}" onclick="event.stopPropagation()">Cobrar individual</a>
+        </summary>
+        <div class="dc-cash-items">
+          {% for it in item.items %}
+          <div class="dc-cash-item">
+            <span>{{ it.cantidad }}× {{ it.producto }}{% if it.opciones %} <small>({{ it.opciones }})</small>{% endif %}{% if it.notas %} <em>«{{ it.notas }}»</em>{% endif %} <small>· Pedido #{{ it.pedido_id }} · {{ it.estado }}</small></span>
+            <b>${{ it.subtotal|floatformat:2 }}</b>
+          </div>
+          {% empty %}
+          <div class="dc-cash-item"><span>Sin consumo registrado todavía.</span></div>
+          {% endfor %}
+        </div>
+      </details>
       {% endfor %}
     </div>
   </section>
