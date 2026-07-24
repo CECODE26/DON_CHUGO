@@ -156,6 +156,16 @@ CSRF_TRUSTED_ORIGINS = [
     if origin.strip()
 ]
 
+# ── Producción detrás de proxy HTTPS (Nginx + Certbot) ───────────────────────
+# Activar con HTTPS_ENABLED=True en el .env del servidor. En local queda apagado
+# para que HTTP plano siga funcionando. Nginx envía X-Forwarded-Proto y hace la
+# redirección HTTP→HTTPS, por eso SECURE_SSL_REDIRECT no es necesario aquí.
+HTTPS_ENABLED = os.environ.get('HTTPS_ENABLED', 'False') == 'True'
+if HTTPS_ENABLED:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 # ===== Django Unfold Configuration =====
 UNFOLD = {
     "SITE_HEADER": "☕ Don Chugo",
