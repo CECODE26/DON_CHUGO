@@ -258,6 +258,18 @@
       .don-login-form { padding: 34px 26px 38px; }
     }
   </style>
+  <script>
+    // Forzar sidebar cerrado en login
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        document.body.classList.add('dc-sidebar-closed');
+        localStorage.setItem('don-chugo-admin-sidebar-closed', '1');
+      });
+    } else {
+      document.body.classList.add('dc-sidebar-closed');
+      localStorage.setItem('don-chugo-admin-sidebar-closed', '1');
+    }
+  </script>
 {% endblock %}
 
 {% block branding %}{% endblock %}
