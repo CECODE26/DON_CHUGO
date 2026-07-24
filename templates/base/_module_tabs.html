@@ -58,8 +58,7 @@
 <nav class="dc-module-tabs" aria-label="Módulos">
   {# Cada pestaña se muestra solo a los roles que pueden entrar a ese módulo #}
   {% if request.user.rol == 'admin' %}
-  {# Directo a la pantalla de cobro: mesas con cuentas abiertas, cobro por
-     persona o mesa completa. El resto del admin sigue accesible por su sidebar. #}
+  {# Directo a la pantalla de cobro (por persona o mesa completa); el resto del admin sigue accesible por su sidebar #}
   <a href="{% url 'admin:pedidos_solicitudpago_facturar_desde_caja' %}" class="dc-module-tab {% if '/admin/' in request.path %}is-active{% endif %}">
     💰 Caja
   </a>
