@@ -1230,6 +1230,9 @@ def cancelar_pedido(request):
     No permite cancelar pedidos en estado 'entregado' o ya 'cancelado'.
     Registra la cancelación en Auditoría con el motivo indicado.
 
+    Si todos los pedidos de la sesión quedan cancelados, cierra la sesión y
+    libera la mesa automáticamente si no hay más sesiones activas.
+
     Parámetros:
         request (HttpRequest): petición POST con body JSON autenticada.
     Retorno:
@@ -1258,6 +1261,23 @@ def cancelar_pedido(request):
             mesa=pedido.sesion.mesa,
             pedido=pedido,
         )
+
+        sesion = pedido.sesion
+        pedidos_activos = sesion.pedidos.exclude(estado="cancelado").exists()
+        if not pedidos_activos:
+            sesion.estado = "cerrada"
+            sesion.save(update_fields=["estado"])
+
+            mesa = sesion.mesa
+            if not mesa.sesiones.filter(estado="activa").exists():
+                mesa.estado = "libre"
+                mesa.pin_actual = None
+                mesa.nota_cierre = ""
+                mesa.save(update_fields=["estado", "pin_actual", "nota_cierre"])
+                AlertaMesero.objects.create(
+                    mesa=mesa, tipo="personalizado",
+                    mensaje=f"Mesa {mesa.numero_mesa} liberada (todos los pedidos cancelados).",
+                )
     return JsonResponse({"ok": True})
 
 # ─── Cancelar solicitud de pago ───────────────────────────────────────────────
