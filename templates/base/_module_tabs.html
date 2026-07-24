@@ -64,7 +64,7 @@
   {% endif %}
   {% if request.user.rol == 'admin' or request.user.rol == 'gerente' %}
   <a href="/gerente/floor-plan/" class="dc-module-tab {% if '/gerente/' in request.path %}is-active{% endif %}">
-    🗺️ Floor Plan
+    🗺️ Panel Mesas
   </a>
   {% endif %}
   {% if request.user.rol == 'admin' or request.user.rol == 'gerente' or request.user.rol == 'cocina' %}
