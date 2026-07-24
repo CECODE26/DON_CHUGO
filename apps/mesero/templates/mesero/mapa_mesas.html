@@ -1341,7 +1341,7 @@ document.addEventListener('DOMContentLoaded', () => pollMesas());
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') pollMesas();
 });
-setInterval(pollMesas, 3000);
+setInterval(pollMesas, 2000);
 
 // ─── Bug A fix: polling de tarjetas en vista "listos" ────────────────────────
 {% if vista == 'listos' %}
@@ -1407,7 +1407,7 @@ document.addEventListener('DOMContentLoaded', () => pollListos());
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') pollListos();
 });
-setInterval(pollListos, 3000);
+setInterval(pollListos, 2000);
 {% endif %}
 
 // ─── Cancelar solicitud de pago ───────────────────────────────────────────────

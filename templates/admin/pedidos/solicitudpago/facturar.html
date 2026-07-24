@@ -37,4 +37,33 @@
   </section>
   {% empty %}<div class="dc-cash-empty">No hay mesas con sesiones activas para facturar.</div>{% endfor %}
 </div>
+
+<script>
+// Actualización en tiempo real (2 s): re-consulta esta misma página y, si el
+// contenido cambió (pedidos nuevos, cuentas cobradas), lo reemplaza en sitio
+// conservando los detalles de invitado que estén expandidos.
+(function () {
+  let actualizando = false;
+  setInterval(async function () {
+    if (actualizando || document.hidden) return;
+    actualizando = true;
+    try {
+      const res = await fetch(window.location.href, { cache: 'no-store' });
+      if (!res.ok) return;
+      const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+      const nuevo = doc.querySelector('.dc-cash-page');
+      const actual = document.querySelector('.dc-cash-page');
+      if (!nuevo || !actual || nuevo.innerHTML === actual.innerHTML) return;
+      const abiertos = Array.from(actual.querySelectorAll('details[open] summary strong'))
+        .map(function (el) { return el.textContent.trim(); });
+      actual.innerHTML = nuevo.innerHTML;
+      actual.querySelectorAll('details').forEach(function (d) {
+        const alias = d.querySelector('summary strong');
+        if (alias && abiertos.includes(alias.textContent.trim())) d.open = true;
+      });
+    } catch (e) { /* sin red: reintenta en el próximo tick */ }
+    finally { actualizando = false; }
+  }, 2000);
+}());
+</script>
 {% endblock %}
