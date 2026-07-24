@@ -58,9 +58,13 @@
 <nav class="dc-module-tabs" aria-label="Módulos">
   {# Cada pestaña se muestra solo a los roles que pueden entrar a ese módulo #}
   {% if request.user.rol == 'admin' %}
-  {# Directo a CAJA → Pedidos (cuentas abiertas); el sidebar del admin queda visible ahí mismo #}
-  <a href="{% url 'admin:pedidos_solicitudpago_facturar_desde_caja' %}" class="dc-module-tab {% if '/admin/' in request.path %}is-active{% endif %}">
+  {# Directo a CAJA → Pedidos (cuentas abiertas por facturar) #}
+  <a href="{% url 'admin:pedidos_solicitudpago_facturar_desde_caja' %}" class="dc-module-tab {% if '/admin/' in request.path and '/pedidos/pedido/' not in request.path %}is-active{% endif %}">
     💰 Caja
+  </a>
+  {# Bandeja de pedidos en vivo: estados, origen (QR/Asistido), imprimir cocina #}
+  <a href="{% url 'admin:pedidos_pedido_changelist' %}" class="dc-module-tab {% if '/pedidos/pedido/' in request.path %}is-active{% endif %}">
+    🧾 Pedidos
   </a>
   {% endif %}
   {% if request.user.rol == 'admin' or request.user.rol == 'gerente' %}
