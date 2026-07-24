@@ -91,6 +91,12 @@ urlpatterns = [
     path('upload-imagen/', views.upload_imagen, name='upload_imagen'),
     path('imagenes/listar/', views.listar_imagenes, name='listar_imagenes'),
     path('imagenes/eliminar/', views.eliminar_imagen, name='eliminar_imagen'),
+    # Flujo de mesas del floor plan (delegados al módulo mesero)
+    path('sesion/agregar/',     views.agregar_sesion_asistida,   name='agregar_sesion_asistida'),
+    path('asistido/confirmar/', views.confirmar_pedido_asistido, name='confirmar_pedido_asistido'),
+    path('sesion/cerrar/',      views.cerrar_sesion_cliente,     name='cerrar_sesion_cliente'),
+    path('mesa/cerrar/',        views.cerrar_mesa,               name='cerrar_mesa'),
+    path('pedidos/entregar/',   views.entregar_pedido,           name='entregar_pedido'),
     # Aliases
     path('menu/mesas/', views.mesas_crud, name='mesas_crud'),
     path('menu/empleados/', views.empleados, name='empleados_menu'),

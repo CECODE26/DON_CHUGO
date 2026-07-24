@@ -141,33 +141,25 @@
   </div>
 </div>
 
-{# ── Modal: pedido asistido (gerente agrega productos a la sesión de un cliente) ── #}
-<!-- Pedido asistido modal (same as mesero) -->
-<div class="modal fade" id="asistidoModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+{# ── Modal de pedido asistido compartido con el panel de mesero ── #}
+{% include "mesero/_asistido_modal.html" %}
+
+{# ── Modal: alta de cliente asistido (cliente nuevo sin QR) ── #}
+<div class="modal fade" id="agregarClienteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:360px;">
     <div class="modal-content rounded-4 border-0">
-      <div class="modal-header border-0 pb-0">
-        <div>
-          <h5 class="modal-title fw-bold" id="asistidoTitle">Pedido asistido</h5>
-          <p class="mb-0" id="asistidoSubtitle" style="font-size:.85rem; color:var(--mm-text-muted);"></p>
+      <div class="modal-body p-4">
+        <h5 class="fw-bold mb-1"><i class="bi bi-person-plus me-2" style="color:var(--mm-green);"></i>Agregar cliente</h5>
+        <p style="font-size:.875rem; color:var(--mm-text-muted); margin-bottom:1.25rem;">Ingresa el nombre o alias del cliente.</p>
+        <input type="hidden" id="agregarClienteMesaId">
+        <div class="mb-4">
+          <label class="form-label fw-semibold" style="font-size:.875rem;">Alias / Nombre <span class="text-danger">*</span></label>
+          <input type="text" id="agregarClienteAlias" maxlength="50" data-upper class="form-control rounded-3" placeholder="ej. Juan, Familia García..." style="border-color:var(--mm-border);">
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body pt-2">
-        <p class="text-muted" style="font-size:.875rem;">Selecciona productos para añadir al pedido de este cliente.</p>
-        <div id="asistidoProductsContainer" style="max-height:400px; overflow-y:auto;"></div>
-        <div id="asistidoCartSummary" style="display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--mm-border);">
-          <h6 class="fw-bold mb-2">Resumen</h6>
-          <div id="asistidoCartItems"></div>
-          <div class="d-flex justify-content-between fw-bold mt-2">
-            <span>Total</span><span id="asistidoTotal" style="color:var(--mm-green);">$0.00</span>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer border-0 pt-0">
-        <button class="btn btn-primary px-4 py-2 fw-bold" onclick="confirmarAsistido()" id="btnConfirmarAsistido" disabled>
-          <i class="bi bi-send me-2"></i>Enviar a cocina
+        <button class="btn btn-primary w-100 py-2 fw-bold" onclick="confirmarAgregarCliente()">
+          <i class="bi bi-check2 me-2"></i>Agregar cliente
         </button>
+        <button class="btn w-100 py-2 mt-2" style="background:var(--mm-cream-dark);" data-bs-dismiss="modal">Cancelar</button>
       </div>
     </div>
   </div>
@@ -320,16 +312,7 @@ const CSRF = getCsrf();
 let currentMesaId = null;   // ID de la mesa seleccionada actualmente
 let currentTab = 'sesiones'; // Pestaña activa en el panel
 let panelData = null;        // Datos JSON del endpoint detalle_mesa
-let asistidoSesionId = null; // Sesión destino del pedido asistido
-let asistidoCart = [];       // Ítems del carrito del pedido asistido
-let menuData = null;         // Bandera de menú cargado
 
-// Fetch menu for asistido
-async function fetchMenu() {
-  // Use products from categories already available in context via a simple JSON endpoint
-  // We use the gerente stats as proxy — for menu we rely on products rendered in asistidoProductsContainer
-  menuData = true; // flag
-}
 
 // Mapa de estilos visuales por estado de mesa: clase CSS, etiqueta y color del indicador
 const estadoStyles = {
@@ -501,7 +484,7 @@ function renderTab(tab) {
 // cerrarSesion — solicita confirmación y cierra la sesión de un cliente específico
 async function cerrarSesion(sid, alias) {
   if (!await confirmarAccion(`¿Cerrar sesión de ${alias}?`)) return;
-  const res = await fetch('/mesero/sesion/cerrar/', { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':CSRF}, body: JSON.stringify({sesion_id:sid}) });
+  const res = await fetch('{% url "gerente:cerrar_sesion_cliente" %}', { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':CSRF}, body: JSON.stringify({sesion_id:sid}) });
   const d = await res.json();
   if (d.ok) { showToast('Sesión cerrada', 'success'); selectMesa(currentMesaId, null, true); }
 }
@@ -509,14 +492,14 @@ async function cerrarSesion(sid, alias) {
 // cerrarMesa — cierra todas las sesiones activas de la mesa y oculta el panel
 async function cerrarMesa() {
   if (!await confirmarAccion('¿Cerrar esta mesa? Todas las sesiones activas se cerrarán.')) return;
-  const res = await fetch('/mesero/mesa/cerrar/', { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':CSRF}, body: JSON.stringify({mesa_id:currentMesaId}) });
+  const res = await fetch('{% url "gerente:cerrar_mesa" %}', { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':CSRF}, body: JSON.stringify({mesa_id:currentMesaId}) });
   const d = await res.json();
   if (d.ok) { showToast('Mesa cerrada', 'success'); closePanel(); pollMesas(); }
 }
 
 // entregarPedido — marca un pedido como entregado (estado "listo" → "entregado")
 async function entregarPedido(id) {
-  const res = await fetch('/mesero/pedidos/entregar/', { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':CSRF}, body: JSON.stringify({pedido_id:id}) });
+  const res = await fetch('{% url "gerente:entregar_pedido" %}', { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':CSRF}, body: JSON.stringify({pedido_id:id}) });
   const d = await res.json();
   if (d.ok) { showToast('Pedido entregado', 'success'); selectMesa(currentMesaId, null, true); }
 }
@@ -694,30 +677,37 @@ function calcMixtoModal() {
   info.style.display = 'block';
 }
 
-// abrirAsistido — abre el modal de pedido asistido para una sesión y alias dados
-function abrirAsistido(sesionId, alias) {
-  asistidoSesionId = sesionId; asistidoCart = [];
-  document.getElementById('asistidoTitle').textContent = `Pedido asistido · ${alias}`;
-  document.getElementById('asistidoSubtitle').textContent = `Mesa ${panelData?.numero_mesa}`;
-  document.getElementById('asistidoCartSummary').style.display = 'none';
-  document.getElementById('btnConfirmarAsistido').disabled = true;
-  // Fetch products
-  fetch('/gerente/menu/productos/?format=json').then(r => r.text()).then(() => {
-    document.getElementById('asistidoProductsContainer').innerHTML = '<p style="color:var(--mm-text-muted); font-size:.875rem;">Carga el menú desde Gestión de Menú para usar pedido asistido aquí.</p>';
+// (abrirAsistido y confirmarAsistido viven en mesero/_asistido_modal.html)
+
+// ── AGREGAR CLIENTE (cliente nuevo sin QR) ───────────────────────────────────
+// Abre el modal de alias para crear una SesionCliente asistida en la mesa actual
+function abrirAgregarCliente() {
+  if (!currentMesaId) return;
+  document.getElementById('agregarClienteMesaId').value = currentMesaId;
+  document.getElementById('agregarClienteAlias').value = '';
+  new bootstrap.Modal(document.getElementById('agregarClienteModal')).show();
+}
+
+// Crea la sesión asistida y encadena directo a la toma del pedido del cliente
+async function confirmarAgregarCliente() {
+  const mesaId = document.getElementById('agregarClienteMesaId').value;
+  const alias = document.getElementById('agregarClienteAlias').value.trim();
+  if (!alias) { showToast('Ingresa un nombre o alias','error'); return; }
+  const res = await fetch('{% url "gerente:agregar_sesion_asistida" %}', {
+    method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+    body: JSON.stringify({mesa_id: mesaId, alias})
   });
-  new bootstrap.Modal(document.getElementById('asistidoModal')).show();
-}
-
-// confirmarAsistido — envía los ítems del carrito al endpoint mesero:asistido/confirmar
-async function confirmarAsistido() {
-  if (!asistidoSesionId || !asistidoCart.length) return;
-  const res = await fetch('/mesero/asistido/confirmar/', { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':CSRF}, body: JSON.stringify({sesion_id:asistidoSesionId, items:asistidoCart}) });
   const d = await res.json();
-  if (d.ok) { bootstrap.Modal.getInstance(document.getElementById('asistidoModal')).hide(); showToast('Pedido enviado', 'success'); selectMesa(currentMesaId, null, true); }
+  if (d.ok) {
+    bootstrap.Modal.getInstance(document.getElementById('agregarClienteModal')).hide();
+    showToast(`Cliente "${alias}" agregado`,'success');
+    await selectMesa(currentMesaId, null, true);
+    pollMesas();
+    abrirAsistido(d.sesion_id, d.alias || alias);
+  } else {
+    showToast(d.error || 'Error al agregar cliente','error');
+  }
 }
-
-// abrirAgregarCliente — stub: la alta de clientes se gestiona en el módulo mesero
-function abrirAgregarCliente() { showToast('Función disponible en el módulo mesero', ''); }
 
 // ── Validación y reset del modal de pago ─────────────────────────────────────
 // Antes de enviar el formulario: verifica montos suficientes según el modo activo;

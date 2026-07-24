@@ -87,10 +87,19 @@ def floor_plan(request):
     solicitudes_count = SolicitudPago.objects.filter(
         estado_solicitud__descripcion="pendiente"
     ).count()
+    # Árbol de menú para el modal de pedido asistido compartido (_asistido_modal.html)
+    categorias = Categoria.objects.prefetch_related(
+        "productos__grupos_modificadores__opciones"
+    ).filter(productos__disponible=True).distinct()
+    from django.urls import reverse
     return render(request, "gerente/floor_plan.html", {
         "mesas": mesas,
         "listos_count": listos_count,
         "solicitudes_count": solicitudes_count,
+        "categorias": categorias,
+        # El modal asistido compartido debe confirmar contra el módulo gerente
+        # (las sesiones de mesero y gerente están aisladas por middleware).
+        "asistido_confirm_url": reverse("gerente:confirmar_pedido_asistido"),
     })
 
 
@@ -2218,3 +2227,51 @@ def eliminar_imagen(request):
         "ok": True,
         "limpiados": {"productos": en_uso_prod, "promociones": en_uso_promo},
     })
+
+
+# ─── Delegados al módulo mesero (flujo de mesas desde el floor plan) ──────────
+# La sesión de cada módulo está aislada (StaffSessionIsolationMiddleware), por lo
+# que el JS del floor plan no puede llamar endpoints /mesero/ directamente: se
+# autentica aquí con la sesión del gerente y se delega a la lógica del mesero
+# (mismo patrón inspect.unwrap que usa el cobro desde caja del admin).
+import inspect
+
+
+def _delegar_a_mesero(nombre_vista, request):
+    from apps.mesero import views as mesero_views
+    return inspect.unwrap(getattr(mesero_views, nombre_vista))(request)
+
+
+@require_POST
+@gerente_requerido
+def agregar_sesion_asistida(request):
+    """Crea una SesionCliente asistida (cliente nuevo sin QR) desde el floor plan."""
+    return _delegar_a_mesero("agregar_sesion_asistida", request)
+
+
+@require_POST
+@gerente_requerido
+def confirmar_pedido_asistido(request):
+    """Confirma un pedido asistido y lo envía a cocina desde el floor plan."""
+    return _delegar_a_mesero("confirmar_pedido_asistido", request)
+
+
+@require_POST
+@gerente_requerido
+def cerrar_sesion_cliente(request):
+    """Cierra la sesión de un cliente; libera la mesa si era la última."""
+    return _delegar_a_mesero("cerrar_sesion", request)
+
+
+@require_POST
+@gerente_requerido
+def cerrar_mesa(request):
+    """Cierra todas las sesiones activas de una mesa y la marca libre."""
+    return _delegar_a_mesero("cerrar_mesa", request)
+
+
+@require_POST
+@gerente_requerido
+def entregar_pedido(request):
+    """Marca un pedido 'listo' como entregado."""
+    return _delegar_a_mesero("entregar_pedido", request)
