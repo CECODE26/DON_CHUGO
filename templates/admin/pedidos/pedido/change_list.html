@@ -29,6 +29,8 @@
       box-shadow: 0 6px 14px rgba(134,23,20,.32);
       color: #fff;
     }
+    /* El h1 del header de Unfold trae overflow:hidden y recortaba el menú */
+    h1:has(.dc-orders-live-heading) { overflow: visible !important; }
     .dc-btn-asistido-menu { position: relative; display: inline-block; }
     .dc-btn-asistido-menu summary { list-style: none; cursor: pointer; }
     .dc-btn-asistido-menu summary::-webkit-details-marker { display: none; }
@@ -65,12 +67,19 @@
   <div class="dc-orders-live-heading">
     {{ block.super }}
     <span class="dc-orders-live-badge"><i></i> Pedidos en vivo</span>
-    <details class="dc-btn-asistido-menu">
-      <summary class="dc-btn-asistido" title="Tomar un pedido a nombre del cliente">➕ Pedido asistido ▾</summary>
+    <details class="dc-btn-asistido-menu" id="tipoPedidoMenu">
+      <summary class="dc-btn-asistido" title="Registrar un pedido a nombre del cliente">📋 Tipo de pedido ▾</summary>
       <div class="dc-btn-asistido-opts">
-        <a href="/gerente/floor-plan/">🍽️ En mesa</a>
-        <a href="/gerente/floor-plan/?llevar=1">🥡 Para llevar</a>
+        <a href="/gerente/floor-plan/">🤝 Pedido asistido</a>
+        <a href="/gerente/floor-plan/?llevar=1">🥡 Pedido para llevar</a>
       </div>
     </details>
+    <script>
+      // Cerrar el menú al hacer click fuera de él
+      document.addEventListener('click', function (e) {
+        const menu = document.getElementById('tipoPedidoMenu');
+        if (menu && menu.open && !menu.contains(e.target)) menu.open = false;
+      });
+    </script>
   </div>
 {% endblock %}
