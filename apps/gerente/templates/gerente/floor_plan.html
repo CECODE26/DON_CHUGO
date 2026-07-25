@@ -322,6 +322,7 @@
 // Estado global del panel lateral
 const CSRF = getCsrf();
 const MESA_PARA_LLEVAR_ID = {{ mesa_para_llevar_id }};
+let _modoAsistido = false; // llegó con ?asistido=1: mesa libre → alta directa
 
 // Pedido para llevar: alta de cliente en la mesa virtual y directo al pedido
 function abrirParaLlevar() {
@@ -337,6 +338,7 @@ window.addEventListener('load', function () {
   if (params.has('llevar')) {
     abrirParaLlevar();
   } else if (params.has('asistido')) {
+    _modoAsistido = true;
     document.getElementById('guiaAsistido').style.display = 'block';
     if (typeof showToast === 'function') showToast('Toca una mesa LIBRE para el pedido asistido', 'info');
   }
@@ -387,6 +389,16 @@ pollMesas();
 // selectMesa — carga el detalle de una mesa desde el endpoint detalle_mesa y renderiza el panel.
 // silent=true evita mostrar el panel (usado en refresco automático por polling).
 async function selectMesa(id, numero, silent=false) {
+  // Modo asistido: una mesa LIBRE abre directo el alta del cliente
+  if (!silent && _modoAsistido) {
+    const tile = document.getElementById(`mesa-tile-${id}`);
+    if (tile && tile.classList.contains('libre')) {
+      currentMesaId = id;
+      abrirAgregarCliente();
+      selectMesa(id, numero, true);
+      return;
+    }
+  }
   currentMesaId = id;
   if (!silent) document.getElementById('mesaPanel').style.display = 'flex';
   try {
