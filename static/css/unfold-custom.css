@@ -498,6 +498,15 @@ body.dc-sidebar-closed .dc-sidebar-toggle {
   75% { transform: rotate(1.5deg) scale(1.02); }
 }
 
+/* Alerta de asistencia al mesero: misma tarjeta que la de cuentas, pero en la
+   esquina inferior izquierda y en dorado para distinguirla de un vistazo. */
+.dc-help-live-alert {
+  right: auto;
+  left: 1rem;
+  background: linear-gradient(135deg, #a96b1f, #713f11);
+  box-shadow: 0 14px 36px rgba(81,36,12,.34);
+}
+
 .dc-cash-actions { display:flex; gap:.4rem; align-items:center; }
 .dc-cash-actions a,
 .dc-cash-create-link { display:inline-flex; align-items:center; justify-content:center; gap:.35rem; min-height:36px; padding:.45rem .7rem; border-radius:8px; font-size:.72rem; font-weight:800; line-height:1; text-decoration:none!important; white-space:nowrap; }

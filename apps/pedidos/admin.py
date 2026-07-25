@@ -513,7 +513,22 @@ class SolicitudPagoAdmin(admin.ModelAdmin):
                 "total": float(total),
                 "fecha": timezone.localtime(solicitud.fecha_hora).strftime("%H:%M"),
             })
-        return JsonResponse({"ok": True, "solicitudes": data})
+
+        # Llamadas de asistencia del cliente (botón "llamar mesero" del menú QR):
+        # se notifican en el admin junto con las cuentas pendientes.
+        from apps.mesas.models import AlertaMesero
+        alertas = [
+            {
+                "id": alerta.pk,
+                "mesa": alerta.mesa.numero_mesa if alerta.mesa else None,
+                "tipo": alerta.get_tipo_display(),
+                "mensaje": alerta.mensaje or "",
+                "fecha": timezone.localtime(alerta.fecha_creacion).strftime("%H:%M"),
+            }
+            for alerta in AlertaMesero.objects.filter(atendida=False, tipo="ayuda")
+            .select_related("mesa").order_by("fecha_creacion")
+        ]
+        return JsonResponse({"ok": True, "solicitudes": data, "alertas": alertas})
 
     def comprobante_view(self, request, solicitud_id):
         from apps.mesero.views import _ticket_context
