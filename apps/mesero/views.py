@@ -836,8 +836,12 @@ def agregar_sesion_asistida(request):
             }, status=409)
 
         grupo_raiz = None
-        if grupo_raw:
-            candidata = SesionCliente.objects.filter(pk=grupo_raw, mesa=mesa).first()
+        try:
+            grupo_pk = int(grupo_raw) if grupo_raw else None
+        except (TypeError, ValueError):
+            grupo_pk = None
+        if grupo_pk:
+            candidata = SesionCliente.objects.filter(pk=grupo_pk, mesa=mesa).first()
             if candidata and candidata.sesiones_de_grupo(solo_activas=True).exists():
                 grupo_raiz = candidata if candidata.grupo_id is None else candidata.grupo
 
