@@ -543,6 +543,25 @@ body.dc-sidebar-closed .dc-sidebar-toggle {
 .dc-cash-guests span strong,
 .dc-cash-guests span small { display:block; }
 .dc-cash-guests a { padding:.45rem .65rem; border-radius:8px; color:var(--dc-wine); background:var(--dc-soft-red); font-weight:800; }
+/* Tarjeta de pedidos PARA LLEVAR en caja: titila hasta que se cobren y retiren */
+.dc-cash-takeout {
+  border: 2px solid var(--dc-gold) !important;
+  animation: dc-takeout-glow 1.6s ease infinite;
+}
+@keyframes dc-takeout-glow {
+  50% { box-shadow: 0 0 0 7px rgba(169,107,31,.16); border-color: #d5934f !important; }
+}
+.dc-takeout-blink {
+  display: inline-block;
+  width: .55rem;
+  height: .55rem;
+  margin-right: .4rem;
+  border-radius: 50%;
+  background: var(--dc-gold);
+  animation: dc-live-pulse 1.2s ease infinite;
+}
+html.dark .dc-cash-takeout { border-color: #d5934f !important; }
+
 /* Bloque de grupo de comensales ("vengo con ellos") dentro de la tarjeta de mesa */
 .dc-cash-group { margin-top:.9rem; padding:.65rem .8rem .35rem; border:1px solid var(--dc-border); border-radius:12px; background:rgba(200,16,36,.02); }
 .dc-cash-group-head { display:flex; align-items:center; gap:.7rem; padding-bottom:.35rem; }
