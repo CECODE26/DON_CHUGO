@@ -64,7 +64,14 @@ class PedidoAdmin(admin.ModelAdmin):
 
     @admin.display(description="Origen", ordering="modalidad__descripcion")
     def origen_pedido(self, obj):
-        """Distingue los pedidos asistidos (tomados por el personal) de los del QR."""
+        """Distingue el origen: para llevar, asistido en mesa, o QR del cliente."""
+        if obj.sesion and obj.sesion.mesa.es_para_llevar:
+            return format_html(
+                '<span style="display:inline-flex;align-items:center;gap:4px;'
+                'padding:3px 10px;border-radius:999px;background:#fdeee0;'
+                'color:#a4570f;font-size:11px;font-weight:800;white-space:nowrap;">'
+                '🥡 Para llevar</span>'
+            )
         if obj.modalidad and obj.modalidad.descripcion == "asistido":
             return format_html(
                 '<span style="display:inline-flex;align-items:center;gap:4px;'
@@ -117,7 +124,7 @@ class PedidoAdmin(admin.ModelAdmin):
     @admin.display(description="Mesa", ordering="sesion__mesa__numero_mesa")
     def mesa(self, obj):
         m = obj.sesion.mesa
-        return "🥡 Llevar" if m.es_para_llevar else m.numero_mesa
+        return "—" if m.es_para_llevar else m.numero_mesa
 
     @admin.display(description="Total")
     def total(self, obj):
