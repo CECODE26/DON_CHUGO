@@ -156,8 +156,8 @@
   <div class="modal-dialog modal-dialog-centered" style="max-width:360px;">
     <div class="modal-content rounded-4 border-0">
       <div class="modal-body p-4">
-        <h5 class="fw-bold mb-1"><i class="bi bi-person-plus me-2" style="color:var(--mm-green);"></i>Agregar cliente</h5>
-        <p style="font-size:.875rem; color:var(--mm-text-muted); margin-bottom:1.25rem;">Ingresa el nombre o alias del cliente.</p>
+        <h5 class="fw-bold mb-1" id="agregarClienteTitulo"><i class="bi bi-person-plus me-2" style="color:var(--mm-green);"></i>Agregar cliente</h5>
+        <p style="font-size:.875rem; color:var(--mm-text-muted); margin-bottom:1.25rem;" id="agregarClienteSub">Ingresa el nombre o alias del cliente.</p>
         <input type="hidden" id="agregarClienteMesaId">
         <div class="mb-4">
           <label class="form-label fw-semibold" style="font-size:.875rem;">Alias / Nombre <span class="text-danger">*</span></label>
@@ -708,6 +708,14 @@ function abrirAgregarCliente() {
   if (!currentMesaId) return;
   document.getElementById('agregarClienteMesaId').value = currentMesaId;
   document.getElementById('agregarClienteAlias').value = '';
+  // Dejar CLARO en qué modo está el modal: mesa física vs para llevar
+  const esLlevar = currentMesaId === MESA_PARA_LLEVAR_ID;
+  document.getElementById('agregarClienteTitulo').innerHTML = esLlevar
+    ? '🥡 Cliente PARA LLEVAR'
+    : '<i class="bi bi-person-plus me-2" style="color:var(--mm-green);"></i>Agregar cliente a la mesa';
+  document.getElementById('agregarClienteSub').textContent = esLlevar
+    ? 'Este pedido NO tendrá mesa: es para llevar. Escribe el nombre del cliente.'
+    : 'Ingresa el nombre o alias del cliente que se sienta en esta mesa.';
   new bootstrap.Modal(document.getElementById('agregarClienteModal')).show();
 }
 
