@@ -29,7 +29,7 @@
 {# ── Indicador rápido en la barra superior: pedidos listos para entregar ── #}
 {% block topbar_actions %}
 {% if listos_count > 0 %}
-<a href="#" class="btn btn-sm rounded-pill px-3" style="background:var(--mm-green-pale); color:var(--mm-green); font-size:.78rem; text-decoration:none;">
+<a href="#" class="btn btn-sm rounded-pill px-3 js-ocultar-en-asistido" style="background:var(--mm-green-pale); color:var(--mm-green); font-size:.78rem; text-decoration:none;">
   <i class="bi bi-check2-circle me-1"></i>{{ listos_count }} listos para entregar
 </a>
 {% endif %}
@@ -50,12 +50,12 @@
       </div>
       <div class="d-flex align-items-center gap-2">
         {% if listos_count > 0 %}
-        <span class="badge rounded-pill px-3 py-2" style="background:var(--mm-green-pale); color:var(--mm-green); font-size:.78rem;">
+        <span class="badge rounded-pill px-3 py-2 js-ocultar-en-asistido" style="background:var(--mm-green-pale); color:var(--mm-green); font-size:.78rem;">
           <i class="bi bi-check2-circle me-1"></i>{{ listos_count }} listos para entregar
         </span>
         {% endif %}
         {# Pedido para llevar: cliente sin mesa; usa la mesa virtual y el flujo asistido #}
-        <button onclick="abrirParaLlevar()" class="btn btn-sm fw-bold d-flex align-items-center gap-1"
+        <button onclick="abrirParaLlevar()" class="btn btn-sm fw-bold d-flex align-items-center gap-1 js-ocultar-en-asistido"
                 style="background:linear-gradient(135deg,var(--mm-gold),#8d5517); color:#fff; border:none; border-radius:9px; padding:.45rem .85rem; font-size:.8rem;">
           🥡 Para llevar
         </button>
@@ -340,6 +340,10 @@ window.addEventListener('load', function () {
   } else if (params.has('asistido')) {
     _modoAsistido = true;
     document.getElementById('guiaAsistido').style.display = 'block';
+    // El modo asistido se enfoca en asignar mesa: sin botón de llevar ni avisos de entrega
+    document.querySelectorAll('.js-ocultar-en-asistido').forEach(function (el) {
+      el.style.display = 'none';
+    });
     if (typeof showToast === 'function') showToast('Toca una mesa LIBRE para el pedido asistido', 'info');
   }
 });
