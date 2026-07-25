@@ -102,6 +102,7 @@
       <input type="hidden" name="mesa_id"        value="{{ mesa.pk }}">
       <input type="hidden" name="metodo_pago_id"  id="metodoPagoId" value="{% if metodos %}{{ metodos.first.id }}{% endif %}">
       <input type="hidden" name="sesion_id"       value="{{ sesion_id|default:'' }}">
+      <input type="hidden" name="grupo_id"        value="{{ grupo_id|default:'' }}">
       <input type="hidden" name="propina"         id="propinaHidden" value="0">
       <input type="hidden" name="monto_efectivo"  id="montoEfectivoHidden" value="">
       <input type="hidden" name="monto_tarjeta"   id="montoTarjetaHidden"  value="">

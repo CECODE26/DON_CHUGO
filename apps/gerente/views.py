@@ -190,8 +190,31 @@ def detalle_mesa(request, mesa_id):
                 "total": float(sol.total_mesa or sol.total_individual or 0),
                 "fecha": sol.fecha_hora.strftime("%H:%M"),
                 "sesion_id": s.pk,
+                "grupo_key": None,
                 "metodo_pref": sol.detalle_pago or "",
             })
+    # Solicitudes grupales a nivel de mesa (sesion=None): de un grupo concreto
+    # o de la mesa completa. Antes no se listaban en este panel.
+    for sol in mesa.solicitudes_pago.filter(
+        sesion=None, estado_solicitud__descripcion="pendiente"
+    ):
+        if sol.grupo_id:
+            miembros = sol.grupo.sesiones_de_grupo(solo_activas=True) if sol.grupo else []
+            nombres = ", ".join(x.alias for x in miembros)
+            alias = f"Grupo: {nombres}" if nombres else "Grupo"
+        else:
+            alias = "Toda la mesa"
+        solicitudes.append({
+            "id": sol.pk,
+            "alias": alias,
+            "tipo": sol.tipo,
+            "tipo_display": sol.get_tipo_display(),
+            "total": float(sol.total_mesa or sol.total_individual or 0),
+            "fecha": sol.fecha_hora.strftime("%H:%M"),
+            "sesion_id": None,
+            "grupo_key": sol.grupo_id,
+            "metodo_pref": sol.detalle_pago or "",
+        })
 
     total_mesa = sum(s["total"] for s in sesiones_data)
     return JsonResponse({
@@ -2275,3 +2298,10 @@ def cerrar_mesa(request):
 def entregar_pedido(request):
     """Marca un pedido 'listo' como entregado."""
     return _delegar_a_mesero("entregar_pedido", request)
+
+
+@require_POST
+@gerente_requerido
+def procesar_pago(request):
+    """Procesa un cobro (individual, por grupo o mesa completa) desde el floor plan."""
+    return _delegar_a_mesero("procesar_pago", request)

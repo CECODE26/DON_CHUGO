@@ -97,6 +97,7 @@ urlpatterns = [
     path('sesion/cerrar/',      views.cerrar_sesion_cliente,     name='cerrar_sesion_cliente'),
     path('mesa/cerrar/',        views.cerrar_mesa,               name='cerrar_mesa'),
     path('pedidos/entregar/',   views.entregar_pedido,           name='entregar_pedido'),
+    path('pago/procesar/',      views.procesar_pago,             name='procesar_pago'),
     # Aliases
     path('menu/mesas/', views.mesas_crud, name='mesas_crud'),
     path('menu/empleados/', views.empleados, name='empleados_menu'),

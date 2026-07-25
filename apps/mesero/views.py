@@ -288,7 +288,13 @@ def detalle_mesa(request, mesa_id):
     for sol in solicitudes_qs:
         if sol.tipo == "grupal":
             total = float(sol.total_mesa or 0)
-            alias = "Toda la mesa"
+            if sol.grupo_id:
+                # Solicitud de UN grupo de comensales: mostrar sus integrantes
+                miembros = sol.grupo.sesiones_de_grupo(solo_activas=True) if sol.grupo else []
+                nombres = ", ".join(s.alias for s in miembros)
+                alias = f"Grupo: {nombres}" if nombres else "Grupo"
+            else:
+                alias = "Toda la mesa"
             sesion_id = None
         else:
             total = float(sol.total_individual or sol.total_mesa or 0)
@@ -298,6 +304,7 @@ def detalle_mesa(request, mesa_id):
             "id": sol.pk,
             "alias": alias,
             "sesion_id": sesion_id,
+            "grupo_key": sol.grupo_id,
             "tipo": sol.tipo,
             "tipo_display": sol.get_tipo_display(),
             "total": total,
@@ -789,7 +796,14 @@ def solicitar_cuenta_mesero(request):
 @require_POST
 @mesero_requerido
 def agregar_sesion_asistida(request):
-    """POST JSON {mesa_id, alias} — crea una SesionCliente asistida."""
+    """POST JSON {mesa_id, alias, grupo?} — crea una SesionCliente asistida.
+
+    ``grupo`` (opcional) es la clave del grupo existente al que se une el
+    cliente ("viene con ellos"). Sin grupo, funda el suyo propio (cuenta
+    independiente) — el default seguro: nunca mezcla cuentas por accidente.
+    """
+    from apps.mesas.models import mesa_en_cierre
+
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -797,6 +811,7 @@ def agregar_sesion_asistida(request):
 
     mesa_id = data.get("mesa_id")
     alias = (data.get("alias") or "").strip()
+    grupo_raw = data.get("grupo") or None
 
     if not mesa_id or not alias:
         return JsonResponse({"ok": False, "error": "mesa_id y alias son obligatorios"}, status=400)
@@ -811,17 +826,20 @@ def agregar_sesion_asistida(request):
         # para evitar race conditions con el flujo de cierre simultáneo.
         mesa = Mesa.objects.select_for_update().get(pk=mesa_id)
 
-        # No permitir agregar personas si la mesa está en proceso de cierre:
-        # (a) tiene sesiones pagadas pendientes de cerrar, o
-        # (b) tiene nota_cierre (pago saldado o cierre parcial en curso).
-        if mesa.estado != "libre" and (
-            bool(mesa.nota_cierre) or
-            mesa.sesiones.filter(estado="pagada").exists()
-        ):
+        # Bloquear solo si la mesa quedó totalmente pagada y está por liberarse.
+        # Con cobros parciales por grupo, tener pagadas + activas (o nota_cierre)
+        # es un estado normal que NO debe impedir sentar más gente.
+        if mesa_en_cierre(mesa):
             return JsonResponse({
                 "ok": False,
                 "error": "La mesa está en proceso de cierre. Ciérrala primero antes de agregar nuevos comensales.",
             }, status=409)
+
+        grupo_raiz = None
+        if grupo_raw:
+            candidata = SesionCliente.objects.filter(pk=grupo_raw, mesa=mesa).first()
+            if candidata and candidata.sesiones_de_grupo(solo_activas=True).exists():
+                grupo_raiz = candidata if candidata.grupo_id is None else candidata.grupo
 
         primera_sesion = not mesa.sesiones.filter(estado="activa").exists()
         sesion = SesionCliente.objects.create(
@@ -830,6 +848,7 @@ def agregar_sesion_asistida(request):
             mesa=mesa,
             modalidad_ingreso=modalidad_asistido,
             estado="activa",
+            grupo=grupo_raiz,
         )
         if primera_sesion:
             pin = str(secrets.randbelow(9000) + 1000)
@@ -879,8 +898,11 @@ def pago(request):
     Retorno:
         HttpResponse: plantilla mesero/pago.html con el contexto de cobro.
     """
+    from django.db.models import Q
+
     mesa_id = request.GET.get("mesa")
     sesion_id = request.GET.get("sesion")
+    grupo_id = request.GET.get("grupo") or None  # cobro por grupo de comensales
     mesa = get_object_or_404(Mesa, pk=mesa_id) if mesa_id else None
     # Excluir PayPal — es un flujo del cliente, no del mesero
     metodos = MetodoPago.objects.exclude(descripcion__iexact="PayPal")
@@ -890,6 +912,10 @@ def pago(request):
     if mesa:
         if sesion_id:
             sesiones = mesa.sesiones.filter(pk=sesion_id, estado="activa")
+        elif grupo_id:
+            sesiones = mesa.sesiones.filter(estado="activa").filter(
+                Q(pk=grupo_id) | Q(grupo_id=grupo_id)
+            )
         else:
             sesiones = mesa.sesiones.filter(estado="activa")
         for s in sesiones:
@@ -905,6 +931,7 @@ def pago(request):
         "total_js": float(total),   # sin formato locale — para JS
         "metodos": metodos,
         "sesion_id": sesion_id or "",
+        "grupo_id": grupo_id or "",
         "pago_action_url": getattr(request, "pago_action_url", ""),
     })
 
@@ -918,13 +945,23 @@ def total_cobro(request):
     el cliente agregó pedidos después de solicitar la cuenta.
     Params: mesa (id), sesion (id opcional → individual; ausente → toda la mesa).
     """
+    from django.db.models import Q
+
     mesa_id   = request.GET.get("mesa")
     sesion_id = request.GET.get("sesion") or None
+    grupo_id  = request.GET.get("grupo") or None
     mesa = get_object_or_404(Mesa, pk=mesa_id)
 
     if sesion_id:
         total = DetallePedido.objects.filter(
             pedido__sesion_id=sesion_id, pedido__sesion__mesa=mesa,
+        ).exclude(pedido__estado="cancelado").aggregate(
+            t=Sum("subtotal_calculado"))["t"] or Decimal("0.00")
+    elif grupo_id:
+        total = DetallePedido.objects.filter(
+            pedido__sesion__mesa=mesa, pedido__sesion__estado="activa",
+        ).filter(
+            Q(pedido__sesion__pk=grupo_id) | Q(pedido__sesion__grupo_id=grupo_id)
         ).exclude(pedido__estado="cancelado").aggregate(
             t=Sum("subtotal_calculado"))["t"] or Decimal("0.00")
     else:
@@ -959,13 +996,24 @@ def procesar_pago(request):
     Retorno:
         HttpResponseRedirect: redirige a mesero:ver_ticket con el ID de la solicitud.
     """
+    from django.db.models import Q
+
     mesa_id            = request.POST.get("mesa_id")
     metodo_id          = request.POST.get("metodo_pago_id")
     sesion_id          = request.POST.get("sesion_id") or None
+    # Cobro por grupo de comensales ("vengo con ellos"): limita el cobro grupal
+    # a las sesiones de ese grupo, sin tocar a desconocidos de la misma mesa.
+    grupo_id           = (request.POST.get("grupo_id") or None) if not sesion_id else None
     monto_str          = request.POST.get("monto_recibido", "").strip()
     propina_str        = request.POST.get("propina", "").strip()
     monto_efectivo_str = request.POST.get("monto_efectivo", "").strip()
     monto_tarjeta_str  = request.POST.get("monto_tarjeta", "").strip()
+
+    def _filtro_grupo(qs):
+        """Restringe un queryset de sesiones al grupo elegido (si aplica)."""
+        if grupo_id:
+            return qs.filter(Q(pk=grupo_id) | Q(grupo_id=grupo_id))
+        return qs
 
     mesa = get_object_or_404(Mesa, pk=mesa_id)
 
@@ -995,10 +1043,10 @@ def procesar_pago(request):
             pedido__sesion=sesion_obj
         ).exclude(pedido__estado="cancelado").aggregate(t=Sum("subtotal_calculado"))["t"] or Decimal("0.00")
     else:
-        sesiones_activas = mesa.sesiones.filter(estado="activa")
+        sesiones_activas = _filtro_grupo(mesa.sesiones.filter(estado="activa"))
         if not sesiones_activas.exists():
             return _volver_pago(
-                "La cuenta de esta mesa ya fue saldada — no quedan sesiones activas. "
+                "La cuenta ya fue saldada — no quedan sesiones activas que cobrar. "
                 "No se puede cobrar de nuevo."
             )
         total = DetallePedido.objects.filter(
@@ -1106,29 +1154,35 @@ def procesar_pago(request):
             _post_pago_mesa(mesa, request.user)
         else:
             sesiones_locked = list(
-                mesa.sesiones
-                .select_for_update(nowait=False)
-                .filter(estado="activa")
+                _filtro_grupo(
+                    mesa.sesiones
+                    .select_for_update(nowait=False)
+                    .filter(estado="activa")
+                )
             )
             # Re-validación bajo lock (problema 1): si ya no hay sesiones
-            # activas, la mesa fue saldada por otro usuario.
+            # activas, la cuenta fue saldada por otro usuario.
             if not sesiones_locked:
-                return _volver_pago("La cuenta de esta mesa ya fue saldada. Operación cancelada.")
+                return _volver_pago("La cuenta ya fue saldada. Operación cancelada.")
 
-            # La SolicitudPago grupal se crea con sesion=None y mesa=mesa.
+            # La SolicitudPago grupal se crea con sesion=None y mesa=mesa
+            # (y grupo=fundadora cuando el cobro es de un grupo específico).
             # P4: usar filter().first() en vez de get_or_create — si por datos
             # antiguos hubiera más de una pendiente, get_or_create lanzaría
             # MultipleObjectsReturned. Tomamos la primera y las demás se cierran
-            # más abajo junto con el resto de pendientes de la mesa.
+            # más abajo junto con el resto de pendientes cubiertas.
+            filtro_sol = {"mesa": mesa, "sesion": None, "estado_solicitud": estado_pendiente}
+            if grupo_id:
+                filtro_sol["grupo_id"] = grupo_id
             sol = (
                 SolicitudPago.objects
-                .filter(mesa=mesa, sesion=None, estado_solicitud=estado_pendiente)
+                .filter(**filtro_sol)
                 .order_by("fecha_hora")
                 .first()
             )
             if sol is None:
                 sol = SolicitudPago.objects.create(
-                    mesa=mesa, sesion=None,
+                    mesa=mesa, sesion=None, grupo_id=grupo_id,
                     estado_solicitud=estado_pendiente,
                     tipo="grupal", total_mesa=total,
                 )
@@ -1154,24 +1208,39 @@ def procesar_pago(request):
             # el ticket reconstruya solo los pedidos de esta visita.
             sol.sesiones_cubiertas.set(sesiones_locked)
 
-            # Cerrar TODAS las solicitudes pendientes de la mesa (grupales e
-            # individuales de cualquier sesión) — la mesa quedó saldada.
-            SolicitudPago.objects.filter(
-                mesa=mesa, estado_solicitud=estado_pendiente
-            ).exclude(pk=sol.pk).update(estado_solicitud=estado_procesada)
-            SolicitudPago.objects.filter(
-                sesion__in=sesiones_ids, estado_solicitud=estado_pendiente
-            ).update(estado_solicitud=estado_procesada)
+            if grupo_id:
+                # Cobro de UN grupo: cerrar solo las solicitudes pendientes de
+                # ese grupo y de sus sesiones. Las de otros grupos de la mesa
+                # (desconocidos compartiendo) deben permanecer intactas.
+                SolicitudPago.objects.filter(
+                    estado_solicitud=estado_pendiente
+                ).filter(
+                    Q(grupo_id=grupo_id) | Q(sesion__in=sesiones_ids)
+                ).exclude(pk=sol.pk).update(estado_solicitud=estado_procesada)
+            else:
+                # Cerrar TODAS las solicitudes pendientes de la mesa (grupales e
+                # individuales de cualquier sesión) — la mesa quedó saldada.
+                SolicitudPago.objects.filter(
+                    mesa=mesa, estado_solicitud=estado_pendiente
+                ).exclude(pk=sol.pk).update(estado_solicitud=estado_procesada)
+                SolicitudPago.objects.filter(
+                    sesion__in=sesiones_ids, estado_solicitud=estado_pendiente
+                ).update(estado_solicitud=estado_procesada)
 
             # Finalizar todas las sesiones pagadas y liberar la mesa.
             _post_pago_mesa(mesa, request.user)
 
     from apps.auditoria.models import Auditoria
+    if sesion_id:
+        alcance = f"Sesión #{sesion_id}"
+    elif grupo_id:
+        alcance = f"Grupo #{grupo_id}"
+    else:
+        alcance = "Todas las sesiones"
     Auditoria.objects.create(
         accion="Pago procesado",
         detalle=(
-            f"Mesa {mesa.numero_mesa} | "
-            f"{'Sesión #' + str(sesion_id) if sesion_id else 'Todas las sesiones'} | "
+            f"Mesa {mesa.numero_mesa} | {alcance} | "
             f"Método: {metodo} | Total: ${total:.2f} | Propina: ${propina:.2f}"
         ),
         empleado=request.user,

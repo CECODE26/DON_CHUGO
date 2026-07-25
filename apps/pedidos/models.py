@@ -220,6 +220,14 @@ class SolicitudPago(models.Model):
         Mesa, null=True, blank=True, on_delete=models.SET_NULL,
         related_name="solicitudes_pago"
     )
+    # Grupo de comensales que cubre esta solicitud grupal (sesión FUNDADORA del
+    # grupo). None en solicitudes individuales o grupales históricas de mesa
+    # completa. Evita que la cuenta de un grupo barra a los desconocidos que
+    # comparten la misma mesa.
+    grupo = models.ForeignKey(
+        SesionCliente, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="solicitudes_de_grupo",
+    )
     # Sesiones efectivamente cubiertas por esta solicitud. Para un pago grupal
     # registra QUÉ sesiones se saldaron, de modo que el ticket reconstruya solo
     # los pedidos de esta visita y no el histórico de la mesa.

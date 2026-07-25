@@ -543,6 +543,16 @@ body.dc-sidebar-closed .dc-sidebar-toggle {
 .dc-cash-guests span strong,
 .dc-cash-guests span small { display:block; }
 .dc-cash-guests a { padding:.45rem .65rem; border-radius:8px; color:var(--dc-wine); background:var(--dc-soft-red); font-weight:800; }
+/* Bloque de grupo de comensales ("vengo con ellos") dentro de la tarjeta de mesa */
+.dc-cash-group { margin-top:.9rem; padding:.65rem .8rem .35rem; border:1px solid var(--dc-border); border-radius:12px; background:rgba(200,16,36,.02); }
+.dc-cash-group-head { display:flex; align-items:center; gap:.7rem; padding-bottom:.35rem; }
+.dc-cash-group-head > span:first-child { flex:1; color:var(--dc-wine); font-size:.82rem; font-weight:800; }
+.dc-cash-group-total { color:var(--dc-red); font-weight:800; }
+.dc-cash-group-btn { padding:.4rem .7rem; border-radius:8px; color:#fff !important; background:var(--dc-red); font-size:.72rem; font-weight:800; white-space:nowrap; }
+html.dark .dc-cash-group { background:rgba(255,255,255,.03); }
+html.dark .dc-cash-group-head > span:first-child { color:#f7bac1; }
+html.dark .dc-cash-group-total { color:#ef8290; }
+
 /* Invitado expandible: summary con la misma grilla, y debajo el detalle del consumo */
 .dc-cash-guest { border-top:1px solid var(--dc-border); }
 .dc-cash-guest summary { display:grid; grid-template-columns:1fr auto auto; gap:.8rem; align-items:center; padding:.7rem 0; cursor:pointer; list-style:none; }

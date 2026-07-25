@@ -188,7 +188,7 @@
       {% comment %}BUGFIX (problema 1): para grupal se pasa sesionId=null para que el
          backend cierre TODAS las sesiones de la mesa, no solo una.{% endcomment %}
       {% if sol.tipo == 'grupal' %}
-      <button onclick="abrirPago({{ sol.mesa_id }}, {{ sol.total_mesa|default_if_none:0 }}, null, '{{ sol.detalle_pago|default:"" }}')" class="btn btn-sm w-100 fw-semibold" style="background:var(--mm-gold); color:#fff;">
+      <button onclick="abrirPago({{ sol.mesa_id }}, {{ sol.total_mesa|default_if_none:0 }}, null, '{{ sol.detalle_pago|default:"" }}', {% if sol.grupo_id %}{{ sol.grupo_id }}{% else %}null{% endif %})" class="btn btn-sm w-100 fw-semibold" style="background:var(--mm-gold); color:#fff;">
         <i class="bi bi-cash-coin me-1"></i>Cobrar toda la mesa
       </button>
       {% else %}
@@ -743,7 +743,7 @@ function renderTab(tab) {
             </div>
           </div>
           <div class="d-flex gap-2 mt-2">
-            <button class="btn btn-primary btn-sm flex-grow-1 rounded-3" onclick="abrirPago(${panelData.mesa_id},${s.total},${s.sesion_id||'null'},'${s.metodo_pref||''}')">
+            <button class="btn btn-primary btn-sm flex-grow-1 rounded-3" onclick="abrirPago(${panelData.mesa_id},${s.total},${s.sesion_id||'null'},'${s.metodo_pref||''}',${s.grupo_key||'null'})">
               <i class="bi bi-cash-coin me-1"></i>Procesar pago
             </button>
             <button class="btn btn-sm rounded-3" style="background:#FDEDEC;color:var(--mm-danger);border:none;white-space:nowrap;" onclick="confirmarCancelarSolicitud(${s.id})">
@@ -958,14 +958,15 @@ function iconoMetodo(nombre) {
 // Recibe el total de la SolicitudPago pero lo refresca desde el backend (P2)
 // por si el cliente agregó pedidos después de pedir la cuenta.
 // metodoPref: método preferido del cliente (pre-selecciona si está disponible).
-function abrirPago(mesaId, total, sesionId=null, metodoPref='') {
+function abrirPago(mesaId, total, sesionId=null, metodoPref='', grupoId=null) {
   _pagoSubtotal = parseFloat(total) || 0;
   _pagoPropina  = 0;
   _pagoModo     = 'EFECTIVO';
 
   document.getElementById('pagoMesaId').value   = mesaId;
   document.getElementById('pagoSesionId').value = sesionId || '';
-  document.getElementById('pagoSubtitle').textContent = sesionId ? 'Cobro individual' : 'Toda la mesa';
+  document.getElementById('pagoGrupoId').value  = (!sesionId && grupoId) ? grupoId : '';
+  document.getElementById('pagoSubtitle').textContent = sesionId ? 'Cobro individual' : (grupoId ? 'Cobro del grupo' : 'Toda la mesa');
 
   // Desglose de ítems (construido desde panelData, disponible tras selectMesa)
   (function renderItemsPago() {

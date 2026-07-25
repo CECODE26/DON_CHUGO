@@ -250,11 +250,12 @@
 
         <div id="montoError" style="font-size:.8rem; color:#721c24; background:#FDEDEC; border-radius:6px; padding:.5rem .75rem; margin-bottom:.75rem; display:none;"></div>
 
-        <form method="post" action="{% url 'mesero:procesar_pago' %}" id="pagoForm" novalidate>
+        <form method="post" action="{% url 'gerente:procesar_pago' %}" id="pagoForm" novalidate>
           {% csrf_token %}
           <input type="hidden" name="mesa_id"       id="pagoMesaId">
           <input type="hidden" name="metodo_pago_id" id="pagoMetodoId">
           <input type="hidden" name="sesion_id"      id="pagoSesionId">
+          <input type="hidden" name="grupo_id"       id="pagoGrupoId">
           <input type="hidden" name="propina"        id="pagoPropinaHidden" value="0">
           <input type="hidden" name="monto_recibido" id="pagoMontoRecibido">
           <input type="hidden" name="monto_efectivo" id="pagoMontoEfectivo">
@@ -454,7 +455,7 @@ function renderTab(tab) {
             <span style="font-weight:700;color:var(--mm-green);">$${s.total.toFixed(2)}</span>
           </div>
           <div class="d-flex gap-2 mt-2">
-            <button class="btn btn-primary btn-sm flex-grow-1 rounded-3" onclick="abrirPago(${panelData.mesa_id},${s.total},${s.sesion_id||'null'},'${s.metodo_pref||''}')">
+            <button class="btn btn-primary btn-sm flex-grow-1 rounded-3" onclick="abrirPago(${panelData.mesa_id},${s.total},${s.sesion_id||'null'},'${s.metodo_pref||''}',${s.grupo_key||'null'})">
               <i class="bi bi-cash-coin me-1"></i>Procesar pago
             </button>
             <button class="btn btn-sm rounded-3" style="background:#FDEDEC;color:var(--mm-danger);border:none;white-space:nowrap;" onclick="confirmarCancelarSolicitud(${s.id})">
@@ -538,13 +539,14 @@ const PAGO_METODOS = [
 //   total      → importe a pagar (sin propina)
 //   sesionId   → null = toda la mesa; número = cobro individual
 //   metodoPref → método preferido del cliente (pre-selecciona el radio)
-function abrirPago(mesaId, total, sesionId=null, metodoPref='') {
+function abrirPago(mesaId, total, sesionId=null, metodoPref='', grupoId=null) {
   _pagoSubtotal = parseFloat(total) || 0;
   _pagoPropina  = 0;
 
   document.getElementById('pagoMesaId').value  = mesaId;
   document.getElementById('pagoSesionId').value = sesionId || '';
-  document.getElementById('pagoSubtitle').textContent = sesionId ? 'Cobro individual' : 'Toda la mesa';
+  document.getElementById('pagoGrupoId').value = (!sesionId && grupoId) ? grupoId : '';
+  document.getElementById('pagoSubtitle').textContent = sesionId ? 'Cobro individual' : (grupoId ? 'Cobro del grupo' : 'Toda la mesa');
 
   // Resetear campos
   document.getElementById('pagoPropinaInput').value  = '';

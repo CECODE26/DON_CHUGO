@@ -475,7 +475,26 @@ class SolicitudPagoAdmin(admin.ModelAdmin):
                     "pedidos": pedidos.count(), "productos": productos,
                     "items": items,
                 })
-            filas.append({"mesa": mesa, "sesiones": sesiones_data, "total": total_mesa})
+            # Agrupar comensales por grupo ("vengo con ellos"): cada grupo se
+            # factura junto; grupos distintos (desconocidos compartiendo mesa)
+            # jamás se mezclan en el cobro.
+            grupos_map = {}
+            for dato in sesiones_data:
+                clave = dato["sesion"].grupo_key
+                grupos_map.setdefault(clave, []).append(dato)
+            grupos = [
+                {
+                    "key": clave,
+                    "sesiones": datos,
+                    "aliases": ", ".join(d["sesion"].alias for d in datos),
+                    "total": sum(d["total"] for d in datos),
+                }
+                for clave, datos in grupos_map.items()
+            ]
+            filas.append({
+                "mesa": mesa, "sesiones": sesiones_data, "total": total_mesa,
+                "grupos": grupos, "un_solo_grupo": len(grupos) == 1,
+            })
         context = {
             **self.admin_site.each_context(request),
             "title": "Facturar desde caja", "filas": filas, "opts": self.model._meta,

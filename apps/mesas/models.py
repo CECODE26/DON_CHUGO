@@ -153,10 +153,31 @@ class SesionCliente(models.Model):
     modalidad_ingreso = models.ForeignKey(
         ModalidadIngreso, on_delete=models.PROTECT, related_name="sesiones"
     )
+    # Grupo de comensales que comparten cuenta dentro de la mesa ("vengo con
+    # ellos"). Apunta a la sesión FUNDADORA del grupo; None = esta sesión funda
+    # su propio grupo (equivale al comportamiento histórico de cuenta propia).
+    # Personas ajenas que comparten mesa quedan en grupos distintos y sus
+    # cuentas jamás se mezclan.
+    grupo = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="miembros_grupo",
+    )
 
     class Meta:
         verbose_name = "Sesión de cliente"
         verbose_name_plural = "Sesiones de clientes"
+
+    @property
+    def grupo_key(self):
+        """PK de la sesión fundadora del grupo (la propia si fundó el grupo)."""
+        return self.grupo_id or self.pk
+
+    def sesiones_de_grupo(self, solo_activas=True):
+        """Sesiones de la mesa que pertenecen a mi mismo grupo (incluida yo)."""
+        qs = SesionCliente.objects.filter(mesa_id=self.mesa_id).filter(
+            models.Q(pk=self.grupo_key) | models.Q(grupo_id=self.grupo_key)
+        )
+        return qs.filter(estado="activa") if solo_activas else qs
 
     def save(self, *args, **kwargs):
         if self.alias:
@@ -169,6 +190,41 @@ class SesionCliente(models.Model):
 
     def __str__(self):
         return f"{self.alias} @ {self.mesa}"
+
+
+def grupos_activos_de_mesa(mesa):
+    """Sesiones activas de la mesa agrupadas por grupo de comensales.
+
+    Devuelve una lista ordenada por fundación del grupo:
+        [{"key": pk_fundadora, "sesiones": [SesionCliente...], "aliases": "ANA, BETO"}]
+    """
+    grupos = {}
+    for sesion in mesa.sesiones.filter(estado="activa").order_by("fecha_inicio"):
+        clave = sesion.grupo_key
+        grupos.setdefault(clave, []).append(sesion)
+    return [
+        {
+            "key": clave,
+            "sesiones": sesiones,
+            "aliases": ", ".join(s.alias for s in sesiones),
+        }
+        for clave, sesiones in grupos.items()
+    ]
+
+
+def mesa_en_cierre(mesa):
+    """True solo cuando la mesa quedó totalmente pagada y está por liberarse.
+
+    Mientras existan sesiones ACTIVAS consumiendo, la mesa admite nuevos
+    comensales aunque otro grupo ya haya pagado (cobros parciales).
+    """
+    if mesa.estado == "libre":
+        return False
+    sesiones = mesa.sesiones.all()
+    return (
+        sesiones.filter(estado="pagada").exists()
+        and not sesiones.filter(estado="activa").exists()
+    )
 
 
 class AlertaMesero(models.Model):

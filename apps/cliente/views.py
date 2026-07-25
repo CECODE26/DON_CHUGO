@@ -13,7 +13,7 @@ from django.views.decorators.cache import never_cache
 from django.utils import timezone
 
 from apps.accounts.decorators import sesion_cliente_requerida
-from apps.mesas.models import Mesa, SesionCliente
+from apps.mesas.models import Mesa, SesionCliente, mesa_en_cierre
 from apps.menu.models import Categoria, Producto, Promocion
 from apps.pedidos.models import Pedido, PedidoConfirmacion, DetallePedido, DetalleModificador
 from apps.catalogs.models import ModalidadIngreso
@@ -83,6 +83,8 @@ def bienvenida(request):
     Si la mesa tiene sesiones "pagada" pendientes de cierre por el mesero, muestra
     el paso "mesa_cerrando" para impedir el ingreso de nuevos comensales.
     """
+    from apps.mesas.models import grupos_activos_de_mesa, mesa_en_cierre
+
     mesa_id = request.GET.get("mesa") or request.session.get("mesa_id")
     if not mesa_id:
         return render(request, "cliente/bienvenida.html", {"error_mesa": True})
@@ -90,21 +92,18 @@ def bienvenida(request):
     step = request.GET.get("step", "")
     sesiones_activas = mesa.sesiones.filter(estado="activa").count()
 
-    # Bloquear ingreso solo si la BD confirma que quedan sesiones pagadas por
-    # cerrar. Expo/WebView puede restaurar una URL antigua con
-    # ``?step=mesa_cerrando``; no debemos mantener ese bloqueo si el pago ya
-    # finalizó la sesión y la mesa dejó de estar en proceso de cierre.
-    mesa_esta_cerrando = (
-        mesa.estado != "libre"
-        and mesa.sesiones.filter(estado="pagada").exists()
-    )
-    if mesa_esta_cerrando:
+    # Bloquear ingreso solo si la mesa quedó totalmente pagada y está por
+    # liberarse (mesa_en_cierre). Mientras haya comensales activos, cualquier
+    # persona nueva puede unirse aunque otro grupo ya haya pagado.
+    if mesa_en_cierre(mesa):
         step = "mesa_cerrando"
     elif step == "mesa_cerrando":
         step = ""
 
     return render(request, "cliente/bienvenida.html", {
         "mesa": mesa, "step": step, "sesiones_activas": sesiones_activas,
+        # Grupos de comensales ya sentados: alimenta el bloque "¿Vienes con alguien?"
+        "grupos": grupos_activos_de_mesa(mesa),
     })
 
 
@@ -149,10 +148,14 @@ def entrar_como_invitado(request, mesa_id):
             request.session["alias"] = sesion_existente.alias
             return redirect("cliente:menu")
 
+    from apps.mesas.models import mesa_en_cierre
+
+    grupo_raw = request.POST.get("grupo") or None
+
     with transaction.atomic():
         mesa = Mesa.objects.select_for_update().get(pk=mesa.pk)
 
-        if mesa.estado != "libre" and mesa.sesiones.filter(estado="pagada").exists():
+        if mesa_en_cierre(mesa):
             return redirect(f"/bienvenida/?mesa={mesa.pk}&step=mesa_cerrando")
 
         if mesa.sesiones.filter(alias__iexact=alias, estado="activa").exists():
@@ -160,6 +163,16 @@ def entrar_como_invitado(request, mesa_id):
                 "mesa": mesa, "alias_previo": alias,
                 "error": "Ese nombre ya está siendo usado en esta mesa.",
             }, status=409)
+
+        # "¿Vienes con alguien?": si eligió un grupo existente y sigue vigente,
+        # su cuenta se asocia a ese grupo (podrán pagar juntos). Valor inválido
+        # o vacío → funda su propio grupo (cuenta independiente).
+        grupo_raiz = None
+        if grupo_raw:
+            candidata = SesionCliente.objects.filter(pk=grupo_raw, mesa=mesa).first()
+            if candidata and candidata.sesiones_de_grupo(solo_activas=True).exists():
+                # Normalizar a la fundadora real (por si eligió a un miembro)
+                grupo_raiz = candidata if candidata.grupo_id is None else candidata.grupo
 
         if not mesa.pin_actual:
             mesa.pin_actual = _generar_pin()
@@ -174,6 +187,7 @@ def entrar_como_invitado(request, mesa_id):
             estado="activa",
             mesa=mesa,
             modalidad_ingreso=modalidad,
+            grupo=grupo_raiz,
         )
 
     request.session["mesa_id"] = mesa.pk
@@ -215,7 +229,7 @@ def crear_sesion(request, mesa_id):
         return redirect(f"/bienvenida/?mesa={mesa_id}")
 
     # Bloquear creación si hay sesiones pagadas y la mesa aún no está libre.
-    if mesa.estado != "libre" and mesa.sesiones.filter(estado="pagada").exists():
+    if mesa_en_cierre(mesa):
         return render(request, "cliente/bienvenida.html", {
             "mesa": mesa, "step": "mesa_cerrando",
             "sesiones_activas": mesa.sesiones.filter(estado="activa").count(),
@@ -237,7 +251,7 @@ def crear_sesion(request, mesa_id):
     with transaction.atomic():
         mesa = Mesa.objects.select_for_update().get(pk=mesa.pk)
         # Re-verificar dentro de la transacción para evitar race condition
-        if mesa.estado != "libre" and mesa.sesiones.filter(estado="pagada").exists():
+        if mesa_en_cierre(mesa):
             return render(request, "cliente/bienvenida.html", {
                 "mesa": mesa, "step": "mesa_cerrando",
                 "sesiones_activas": mesa.sesiones.filter(estado="activa").count(),
@@ -740,10 +754,10 @@ def pedidos(request):
     total_general = sum(
         sum(d.subtotal_calculado for d in p.detalles.all()) for p in mis_pedidos
     )
-    # Total de TODA la mesa (todas las sesiones activas) para la opción de pago
-    # grupal vía PayPal — necesario para previsualizar propinas en porcentaje (1.6).
+    # Total del GRUPO del cliente (sus acompañantes) para la opción de pago
+    # grupal — desconocidos que comparten la mesa quedan fuera de esta cuenta.
     from django.db.models import Sum as _Sum
-    sesiones_activas_mesa = sesion.mesa.sesiones.filter(estado="activa")
+    sesiones_activas_mesa = sesion.sesiones_de_grupo()
     total_mesa = DetallePedido.objects.filter(
         pedido__sesion__in=sesiones_activas_mesa
     ).exclude(pedido__estado="cancelado").aggregate(
@@ -806,7 +820,9 @@ def desglose_pago(request):
         propina_pct = Decimal("0.00")
 
     if tipo == "grupal":
-        sesiones_cubiertas = list(sesion.mesa.sesiones.filter(estado="activa"))
+        # "Grupal" = MI grupo de comensales, no la mesa entera: los grupos
+        # ajenos que comparten mesa tienen su cuenta aparte.
+        sesiones_cubiertas = list(sesion.sesiones_de_grupo())
         pedidos_qs = _Pedido.objects.filter(
             sesion__in=sesiones_cubiertas,
         )
@@ -986,8 +1002,7 @@ def solicitar_cuenta(request):
     if not confirmar_sin_entrega:
         if tipo == "grupal":
             pedidos_pendientes = _Pedido.objects.filter(
-                sesion__mesa=sesion.mesa,
-                sesion__estado="activa",
+                sesion__in=sesion.sesiones_de_grupo(),
                 estado__in=("recibido", "preparando", "listo"),
             ).exclude(estado="cancelado").count()
         else:
@@ -1015,9 +1030,11 @@ def solicitar_cuenta(request):
     )
     total_mesa = None
     if tipo == "grupal":
+        # "Grupal" = el grupo del solicitante; los demás grupos de la mesa
+        # tienen su propia cuenta y no entran aquí.
         total_mesa = sum(
             sum(d.subtotal_calculado for d in p.detalles.all())
-            for s in sesion.mesa.sesiones.filter(estado="activa")
+            for s in sesion.sesiones_de_grupo()
             for p in s.pedidos.prefetch_related("detalles").exclude(estado="cancelado")
         )
 
@@ -1045,6 +1062,7 @@ def solicitar_cuenta(request):
             sol, created = SolicitudPago.objects.get_or_create(
                 mesa=sesion.mesa,
                 sesion=None,
+                grupo_id=sesion.grupo_key,
                 tipo="grupal",
                 estado_solicitud=estado_pendiente,
                 defaults={
@@ -1131,7 +1149,8 @@ def paypal_crear_orden_cliente(request):
         propina = Decimal("0.00")
 
     if tipo == "grupal":
-        sesiones = sesion.mesa.sesiones.filter(estado="activa")
+        # "Grupal" = mi grupo de comensales, no la mesa entera.
+        sesiones = sesion.sesiones_de_grupo()
         subtotal = DetallePedido.objects.filter(
             pedido__sesion__in=sesiones
         ).exclude(pedido__estado="cancelado").aggregate(t=Sum("subtotal_calculado"))["t"] or Decimal("0.00")
@@ -1243,8 +1262,8 @@ def _paypal_aplicar_captura(sesion, order_id, tipo, propina):
     # E5: validar el estado ANTES de capturar en PayPal. Capturar primero y
     # rechazar después cobraría dinero real sin aplicarlo a ninguna cuenta.
     if tipo == "grupal":
-        if not sesion.mesa.sesiones.filter(estado="activa").exists():
-            return None, "La cuenta de esta mesa ya fue saldada.", 409
+        if not sesion.sesiones_de_grupo().exists():
+            return None, "La cuenta de tu grupo ya fue saldada.", 409
     else:
         if sesion.estado != "activa":
             return None, "Tu cuenta ya fue saldada.", 409
@@ -1287,11 +1306,15 @@ def _paypal_aplicar_captura(sesion, order_id, tipo, propina):
 
     with db_transaction.atomic():
         if tipo == "grupal":
+            from django.db.models import Q as _Q
+            _gk = sesion.grupo_key
             sesiones_locked = list(
-                mesa.sesiones.select_for_update(nowait=False).filter(estado="activa")
+                mesa.sesiones.select_for_update(nowait=False)
+                .filter(estado="activa")
+                .filter(_Q(pk=_gk) | _Q(grupo_id=_gk))
             )
             if not sesiones_locked:
-                return None, "La cuenta de esta mesa ya fue saldada.", 409
+                return None, "La cuenta de tu grupo ya fue saldada.", 409
             sesiones_para_ticket = sesiones_locked
             total_consumo = DetallePedido.objects.filter(
                 pedido__sesion__in=sesiones_locked
@@ -1317,12 +1340,21 @@ def _paypal_aplicar_captura(sesion, order_id, tipo, propina):
 
             if sol is None:
                 sol = SolicitudPago.objects.create(
-                    mesa=mesa, tipo="grupal", total_mesa=total_consumo,
+                    mesa=mesa, tipo="grupal", grupo_id=sesion.grupo_key,
+                    total_mesa=total_consumo,
                     propina_sugerida=propina,
                     estado_solicitud=estado_procesada,
                     metodo_pago=metodo_paypal, referencia_externa=order_id, detalle_pago="PAYPAL",
                 )
             sol.sesiones_cubiertas.set(sesiones_locked)
+
+            # Cerrar las solicitudes pendientes restantes del grupo (p.ej. la
+            # solicitud grupal a nivel de mesa) sin tocar las de otros grupos.
+            SolicitudPago.objects.filter(
+                estado_solicitud=estado_pendiente
+            ).filter(
+                _Q(grupo_id=_gk) | _Q(sesion__in=sesiones_locked)
+            ).exclude(pk=sol.pk).update(estado_solicitud=estado_procesada)
 
             from apps.mesero.views import _post_pago_mesa
             _post_pago_mesa(mesa, user=None)
