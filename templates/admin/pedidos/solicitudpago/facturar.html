@@ -9,10 +9,12 @@
   {% for fila in filas %}
   <section class="dc-cash-table-card">
     <header>
-      <div><strong>Mesa {{ fila.mesa.numero_mesa }}</strong><small>{{ fila.sesiones|length }} invitado(s) activo(s)</small></div>
+      <div><strong>{% if fila.mesa.es_para_llevar %}🥡 Para llevar{% else %}Mesa {{ fila.mesa.numero_mesa }}{% endif %}</strong><small>{{ fila.sesiones|length }} {% if fila.mesa.es_para_llevar %}pedido(s) para llevar{% else %}invitado(s) activo(s){% endif %}</small></div>
       <div class="dc-cash-table-total"><small>Total mesa</small><strong>${{ fila.total|floatformat:2 }}</strong></div>
     </header>
-    {% if fila.un_solo_grupo %}
+    {% if fila.mesa.es_para_llevar %}
+    {# Para llevar: cada cliente se cobra por separado — sin botón de mesa completa #}
+    {% elif fila.un_solo_grupo %}
     <a class="dc-cash-main-button" href="{% url 'admin:pedidos_solicitudpago_cobrar_desde_caja' %}?mesa={{ fila.mesa.pk }}">Cobrar toda la mesa</a>
     {% else %}
     <a class="dc-cash-main-button" href="{% url 'admin:pedidos_solicitudpago_cobrar_desde_caja' %}?mesa={{ fila.mesa.pk }}"

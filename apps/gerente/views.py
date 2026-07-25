@@ -82,7 +82,7 @@ def floor_plan(request):
     Los contadores de listos y solicitudes se muestran en la barra superior
     y se actualizan en tiempo real por mesas_estado() vía polling JS.
     """
-    mesas = Mesa.objects.prefetch_related("sesiones__pedidos").order_by("numero_mesa")
+    mesas = Mesa.objects.filter(es_para_llevar=False).prefetch_related("sesiones__pedidos").order_by("numero_mesa")
     listos_count = Pedido.objects.filter(estado="listo").count()
     solicitudes_count = SolicitudPago.objects.filter(
         estado_solicitud__descripcion="pendiente"
@@ -92,11 +92,16 @@ def floor_plan(request):
         "productos__grupos_modificadores__opciones"
     ).filter(productos__disponible=True).distinct()
     from django.urls import reverse
+    # Mesa virtual de pedidos para llevar (se crea sola la primera vez)
+    mesa_para_llevar = Mesa.obtener_para_llevar()
+    para_llevar_activos = mesa_para_llevar.sesiones.filter(estado="activa").count()
     return render(request, "gerente/floor_plan.html", {
         "mesas": mesas,
         "listos_count": listos_count,
         "solicitudes_count": solicitudes_count,
         "categorias": categorias,
+        "mesa_para_llevar_id": mesa_para_llevar.pk,
+        "para_llevar_activos": para_llevar_activos,
         # El modal asistido compartido debe confirmar contra el módulo gerente
         # (las sesiones de mesero y gerente están aisladas por middleware).
         "asistido_confirm_url": reverse("gerente:confirmar_pedido_asistido"),
@@ -331,7 +336,7 @@ def mesas_estado(request):
     # BUG #5 FIX: prefetch completo para evitar N+1 queries por polling.
     # Igual que en mesero/views.py, las llamadas anidadas a count()/exists()
     # generaban ~100 queries por cada actualización del floor plan.
-    mesas = Mesa.objects.prefetch_related(
+    mesas = Mesa.objects.filter(es_para_llevar=False).prefetch_related(
         "sesiones__pedidos",
         "sesiones__solicitudes_pago__estado_solicitud",
         "alertas",

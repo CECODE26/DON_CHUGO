@@ -116,7 +116,8 @@ class PedidoAdmin(admin.ModelAdmin):
 
     @admin.display(description="Mesa", ordering="sesion__mesa__numero_mesa")
     def mesa(self, obj):
-        return obj.sesion.mesa.numero_mesa
+        m = obj.sesion.mesa
+        return "🥡 Llevar" if m.es_para_llevar else m.numero_mesa
 
     @admin.display(description="Total")
     def total(self, obj):
@@ -329,7 +330,9 @@ class SolicitudPagoAdmin(admin.ModelAdmin):
 
     @admin.display(description="Mesa", ordering="mesa__numero_mesa")
     def mesa_display(self, obj):
-        return obj.mesa.numero_mesa if obj.mesa else "—"
+        if not obj.mesa:
+            return "—"
+        return "🥡 Llevar" if obj.mesa.es_para_llevar else obj.mesa.numero_mesa
 
     @admin.display(description="Cliente")
     def cliente_display(self, obj):

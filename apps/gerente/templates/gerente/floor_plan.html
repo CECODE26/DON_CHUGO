@@ -48,11 +48,18 @@
         {# Resumen dinámico actualizado por pollMesas(): "X activas · Y libres" #}
         <p style="font-size:.8rem; color:var(--mm-text-muted); margin-bottom:0;" id="mesasSummary">Cargando…</p>
       </div>
-      {% if listos_count > 0 %}
-      <span class="badge rounded-pill px-3 py-2" style="background:var(--mm-green-pale); color:var(--mm-green); font-size:.78rem;">
-        <i class="bi bi-check2-circle me-1"></i>{{ listos_count }} listos para entregar
-      </span>
-      {% endif %}
+      <div class="d-flex align-items-center gap-2">
+        {% if listos_count > 0 %}
+        <span class="badge rounded-pill px-3 py-2" style="background:var(--mm-green-pale); color:var(--mm-green); font-size:.78rem;">
+          <i class="bi bi-check2-circle me-1"></i>{{ listos_count }} listos para entregar
+        </span>
+        {% endif %}
+        {# Pedido para llevar: cliente sin mesa; usa la mesa virtual y el flujo asistido #}
+        <button onclick="abrirParaLlevar()" class="btn btn-sm fw-bold d-flex align-items-center gap-1"
+                style="background:linear-gradient(135deg,var(--mm-gold),#8d5517); color:#fff; border:none; border-radius:9px; padding:.45rem .85rem; font-size:.8rem;">
+          🥡 Para llevar{% if para_llevar_activos %} ({{ para_llevar_activos }}){% endif %}
+        </button>
+      </div>
     </div>
 
     <!-- Legend -->
@@ -310,6 +317,13 @@
 <script>
 // Estado global del panel lateral
 const CSRF = getCsrf();
+const MESA_PARA_LLEVAR_ID = {{ mesa_para_llevar_id }};
+
+// Pedido para llevar: alta de cliente en la mesa virtual y directo al pedido
+function abrirParaLlevar() {
+  currentMesaId = MESA_PARA_LLEVAR_ID;
+  abrirAgregarCliente();
+}
 let currentMesaId = null;   // ID de la mesa seleccionada actualmente
 let currentTab = 'sesiones'; // Pestaña activa en el panel
 let panelData = null;        // Datos JSON del endpoint detalle_mesa
@@ -706,6 +720,9 @@ async function confirmarAgregarCliente() {
     await selectMesa(currentMesaId, null, true);
     pollMesas();
     abrirAsistido(d.sesion_id, d.alias || alias);
+    if (currentMesaId === MESA_PARA_LLEVAR_ID) {
+      document.getElementById('asistidoSubtitle').textContent = '🥡 Para llevar';
+    }
   } else {
     showToast(d.error || 'Error al agregar cliente','error');
   }

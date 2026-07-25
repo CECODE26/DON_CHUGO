@@ -91,7 +91,7 @@
       <div class="kds-card" id="ticket-{{ pedido.pk }}" data-ts="{{ pedido.fecha_hora_ingreso|date:'U' }}" data-estado="{{ pedido.estado }}">
         <div class="kds-card-header">
           <div class="d-flex align-items-center gap-2">
-            <span class="kds-table-badge">Mesa {{ pedido.sesion.mesa.numero_mesa }}</span>
+            <span class="kds-table-badge">{% if pedido.sesion.mesa.es_para_llevar %}🥡 LLEVAR{% else %}Mesa {{ pedido.sesion.mesa.numero_mesa }}{% endif %}</span>
             <span style="font-size:.8rem; color:#ccc;">{{ pedido.sesion.alias }}</span>
           </div>
           <span class="kds-timer green" id="timer-{{ pedido.pk }}">0:00</span>
@@ -147,7 +147,7 @@
       <div style="background:#1e1e1e; border-radius:var(--radius-sm); padding:.75rem 1rem; border-left:3px solid var(--kds-green); margin-bottom:.5rem;" id="done-{{ pedido.pk }}">
         <div class="d-flex align-items-center justify-content-between mb-1">
           <div class="d-flex align-items-center gap-2">
-            <span class="kds-table-badge">Mesa {{ pedido.sesion.mesa.numero_mesa }}</span>
+            <span class="kds-table-badge">{% if pedido.sesion.mesa.es_para_llevar %}🥡 LLEVAR{% else %}Mesa {{ pedido.sesion.mesa.numero_mesa }}{% endif %}</span>
             <span style="font-size:.8rem; color:#aaa;">{{ pedido.sesion.alias }}</span>
           </div>
           <i class="bi bi-check-circle-fill" style="color:var(--kds-green);"></i>
@@ -391,7 +391,7 @@ function buildCard(p) {
   return `<div class="kds-card" id="ticket-${p.id}" data-ts="${ts}" data-estado="${p.estado}">
     <div class="kds-card-header">
       <div class="d-flex align-items-center gap-2">
-        <span class="kds-table-badge">Mesa ${p.mesa}</span>
+        <span class="kds-table-badge">${p.mesa === 'LLEVAR' ? '🥡 LLEVAR' : 'Mesa ' + p.mesa}</span>
         <span style="font-size:.8rem; color:#ccc;">${p.alias}</span>
       </div>
       <span class="kds-timer green" id="timer-${p.id}">0:00</span>
@@ -480,7 +480,7 @@ async function pollKDS() {
           <div style="background:#1e1e1e;border-radius:var(--radius-sm);padding:.75rem 1rem;border-left:3px solid var(--kds-green);margin-bottom:.5rem;" id="done-${p.id}">
             <div class="d-flex align-items-center justify-content-between mb-1">
               <div class="d-flex gap-2">
-                <span class="kds-table-badge">Mesa ${p.mesa}</span>
+                <span class="kds-table-badge">${p.mesa === 'LLEVAR' ? '🥡 LLEVAR' : 'Mesa ' + p.mesa}</span>
                 <span style="font-size:.8rem;color:#aaa;">${p.alias}</span>
               </div>
               <i class="bi bi-check-circle-fill" style="color:var(--kds-green);"></i>

@@ -57,6 +57,10 @@ class Mesa(models.Model):
 
     numero_mesa = models.IntegerField(unique=True)
     capacidad = models.IntegerField()
+    # Mesa virtual "Para llevar": agrupa los pedidos take-away. No es una mesa
+    # física — se excluye de los mapas de mesas y no lleva QR impreso, pero
+    # reutiliza intacto todo el flujo (sesiones, cocina, caja, cobro).
+    es_para_llevar = models.BooleanField(default=False)
     ubicacion = models.ForeignKey(
         UbicacionMesa, null=True, blank=True,
         on_delete=models.SET_NULL, related_name="mesas"  # SET_NULL: mesa sobrevive al borrar ubicación
@@ -83,7 +87,16 @@ class Mesa(models.Model):
         ordering = ["numero_mesa"]
 
     def __str__(self):
-        return f"Mesa {self.numero_mesa}"
+        return "🥡 Para llevar" if self.es_para_llevar else f"Mesa {self.numero_mesa}"
+
+    @classmethod
+    def obtener_para_llevar(cls):
+        """Devuelve (creándola si no existe) la mesa virtual de pedidos para llevar."""
+        mesa, _ = cls.objects.get_or_create(
+            es_para_llevar=True,
+            defaults={"numero_mesa": 0, "capacidad": 0},
+        )
+        return mesa
 
     # ─── Métodos para QR ──────────────────────────────────────────────
     def get_qr_url(self):

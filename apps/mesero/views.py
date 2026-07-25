@@ -105,7 +105,7 @@ def mapa_mesas(request):
         HttpResponse: plantilla mesero/mapa_mesas.html con el contexto anterior.
     """
     from apps.menu.models import Categoria
-    mesas = Mesa.objects.prefetch_related("sesiones").order_by("numero_mesa")
+    mesas = Mesa.objects.filter(es_para_llevar=False).prefetch_related("sesiones").order_by("numero_mesa")
     listos_count = Pedido.objects.filter(estado="listo").count()
     solicitudes_count = SolicitudPago.objects.filter(
         estado_solicitud__descripcion="pendiente"
@@ -144,7 +144,7 @@ def mesas_estado(request):
     Retorno:
         JsonResponse: {"ok": True, "mesas": [...], "listos_count": N, ...}
     """
-    mesas = Mesa.objects.prefetch_related(
+    mesas = Mesa.objects.filter(es_para_llevar=False).prefetch_related(
         "sesiones__pedidos",
         # Solicitudes a nivel de MESA: incluye las grupales (sesion=None) que
         # antes no se veían al recorrer solo sesiones__solicitudes_pago.
@@ -560,7 +560,7 @@ def pedido_asistido(request):
     una mesa libre y le toma el pedido.
     """
     mesa_id = request.GET.get("mesa")
-    mesas = Mesa.objects.all().order_by("numero_mesa")
+    mesas = Mesa.objects.filter(es_para_llevar=False).order_by("numero_mesa")
     mesa = get_object_or_404(Mesa, pk=mesa_id) if mesa_id else None
     from apps.menu.models import Categoria
     categorias = Categoria.objects.prefetch_related(

@@ -188,7 +188,7 @@ def pedidos_json(request):
         return {
             "id": p.pk,
             "estado": p.estado,
-            "mesa": p.sesion.mesa.numero_mesa,
+            "mesa": "LLEVAR" if p.sesion.mesa.es_para_llevar else p.sesion.mesa.numero_mesa,
             "alias": p.sesion.alias,
             "fecha": p.fecha_hora_ingreso.isoformat(),
             "area_completa": all(d.listo for d in detalles_area) if detalles_area else True,
@@ -213,7 +213,7 @@ def pedidos_json(request):
         return {
             "id": p.pk,
             "estado": p.estado,
-            "mesa": p.sesion.mesa.numero_mesa,
+            "mesa": "LLEVAR" if p.sesion.mesa.es_para_llevar else p.sesion.mesa.numero_mesa,
             "alias": p.sesion.alias,
             "fecha": p.fecha_hora_ingreso.isoformat(),
             "area_completa": True,
