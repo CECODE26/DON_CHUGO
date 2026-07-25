@@ -29,6 +29,35 @@
       box-shadow: 0 6px 14px rgba(134,23,20,.32);
       color: #fff;
     }
+    .dc-btn-asistido-menu { position: relative; display: inline-block; }
+    .dc-btn-asistido-menu summary { list-style: none; cursor: pointer; }
+    .dc-btn-asistido-menu summary::-webkit-details-marker { display: none; }
+    .dc-btn-asistido-opts {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 12px;
+      z-index: 10100;
+      min-width: 175px;
+      padding: 5px;
+      border: 1px solid #e8dfda;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 12px 30px rgba(60,20,15,.18);
+    }
+    .dc-btn-asistido-opts a {
+      display: block;
+      padding: 8px 12px;
+      border-radius: 7px;
+      color: #861714 !important;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .dc-btn-asistido-opts a:hover { background: #fbeaec; }
+    html.dark .dc-btn-asistido-opts { background: #211815; border-color: #3d2e28; }
+    html.dark .dc-btn-asistido-opts a { color: #ef8290 !important; }
+    html.dark .dc-btn-asistido-opts a:hover { background: #3a181c; }
   </style>
 {% endblock %}
 
@@ -36,10 +65,12 @@
   <div class="dc-orders-live-heading">
     {{ block.super }}
     <span class="dc-orders-live-badge"><i></i> Pedidos en vivo</span>
-    <a href="/gerente/floor-plan/"
-       class="dc-btn-asistido"
-       title="Ir al Floor Plan para asignar mesa y tomar el pedido de un cliente sin QR">
-      ➕ Pedido asistido
-    </a>
+    <details class="dc-btn-asistido-menu">
+      <summary class="dc-btn-asistido" title="Tomar un pedido a nombre del cliente">➕ Pedido asistido ▾</summary>
+      <div class="dc-btn-asistido-opts">
+        <a href="/gerente/floor-plan/">🍽️ En mesa</a>
+        <a href="/gerente/floor-plan/?llevar=1">🥡 Para llevar</a>
+      </div>
+    </details>
   </div>
 {% endblock %}

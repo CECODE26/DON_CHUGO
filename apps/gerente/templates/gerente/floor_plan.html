@@ -324,6 +324,13 @@ function abrirParaLlevar() {
   currentMesaId = MESA_PARA_LLEVAR_ID;
   abrirAgregarCliente();
 }
+
+// Acceso directo desde la bandeja de Pedidos: ?llevar=1 abre el modal al cargar
+window.addEventListener('load', function () {
+  if (new URLSearchParams(window.location.search).has('llevar')) {
+    abrirParaLlevar();
+  }
+});
 let currentMesaId = null;   // ID de la mesa seleccionada actualmente
 let currentTab = 'sesiones'; // Pestaña activa en el panel
 let panelData = null;        // Datos JSON del endpoint detalle_mesa
