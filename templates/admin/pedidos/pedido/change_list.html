@@ -31,35 +31,13 @@
     }
     /* El h1 del header de Unfold trae overflow:hidden y recortaba el menú */
     h1:has(.dc-orders-live-heading) { overflow: visible !important; }
-    .dc-btn-asistido-menu { position: relative; display: inline-block; }
-    .dc-btn-asistido-menu summary { list-style: none; cursor: pointer; }
-    .dc-btn-asistido-menu summary::-webkit-details-marker { display: none; }
-    .dc-btn-asistido-opts {
-      position: absolute;
-      top: calc(100% + 6px);
-      left: 12px;
-      z-index: 10100;
-      min-width: 175px;
-      padding: 5px;
-      border: 1px solid #e8dfda;
-      border-radius: 10px;
-      background: #fff;
-      box-shadow: 0 12px 30px rgba(60,20,15,.18);
+    /* Variante dorada para el botón de pedidos para llevar */
+    .dc-btn-llevar {
+      margin-left: 6px;
+      background: linear-gradient(135deg, #a96b1f, #713f11);
+      box-shadow: 0 4px 10px rgba(113,63,17,.25);
     }
-    .dc-btn-asistido-opts a {
-      display: block;
-      padding: 8px 12px;
-      border-radius: 7px;
-      color: #861714 !important;
-      font-size: 13px;
-      font-weight: 700;
-      text-decoration: none;
-      white-space: nowrap;
-    }
-    .dc-btn-asistido-opts a:hover { background: #fbeaec; }
-    html.dark .dc-btn-asistido-opts { background: #211815; border-color: #3d2e28; }
-    html.dark .dc-btn-asistido-opts a { color: #ef8290 !important; }
-    html.dark .dc-btn-asistido-opts a:hover { background: #3a181c; }
+    .dc-btn-llevar:hover { box-shadow: 0 6px 14px rgba(113,63,17,.32); }
   </style>
 {% endblock %}
 
@@ -67,19 +45,11 @@
   <div class="dc-orders-live-heading">
     {{ block.super }}
     <span class="dc-orders-live-badge"><i></i> Pedidos en vivo</span>
-    <details class="dc-btn-asistido-menu" id="tipoPedidoMenu">
-      <summary class="dc-btn-asistido" title="Registrar un pedido a nombre del cliente">📋 Tipo de pedido ▾</summary>
-      <div class="dc-btn-asistido-opts">
-        <a href="/gerente/floor-plan/?asistido=1">🤝 Pedido asistido</a>
-        <a href="/gerente/floor-plan/?llevar=1">🥡 Pedido para llevar</a>
-      </div>
-    </details>
-    <script>
-      // Cerrar el menú al hacer click fuera de él
-      document.addEventListener('click', function (e) {
-        const menu = document.getElementById('tipoPedidoMenu');
-        if (menu && menu.open && !menu.contains(e.target)) menu.open = false;
-      });
-    </script>
+    <a href="/gerente/floor-plan/?asistido=1" class="dc-btn-asistido" title="Asignar mesa a un cliente y tomarle el pedido">
+      🤝 Pedido asistido
+    </a>
+    <a href="/gerente/floor-plan/?llevar=1" class="dc-btn-asistido dc-btn-llevar" title="Pedido sin mesa, para llevar">
+      🥡 Para llevar
+    </a>
   </div>
 {% endblock %}
